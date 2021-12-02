@@ -7,7 +7,7 @@ from block_io import BlockIo
 import qrcode
 
 block_io = BlockIo(API_KEY, SECRET_PIN, version)
-block_io.base_url('http://foryubiz.com')
+block_io.base_url()
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
