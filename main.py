@@ -29,7 +29,7 @@ async def start(m, res=False):
     item2 = types.KeyboardButton("Питер")
     markup.add(item1)
     markup.add(item2)
-    await bot.send_message(m.chat.id, "Выбери свой город!", reply_markup=markup)
+    bot.send_message(m.chat.id, "Выбери свой город!", reply_markup=markup)
 
 
 # Получение сообщений от юзера
@@ -38,96 +38,96 @@ async def handle_text(message: types.Message):
     markup_inline = types.InlineKeyboardMarkup()
 
     if message.text.strip() == 'Москва':
-        rows = await db_exec("SELECT id, product, cost FROM public.products WHERE city = 'Moscow';")
+        rows =  db_exec("SELECT id, product, cost FROM public.products WHERE city = 'Moscow';")
 
         for row in rows:
             img = open('data/' + ''.join(row[1]) + '.png', 'rb')
             item_buy = types.InlineKeyboardButton(text='Купить', callback_data=f'{row[0]}')
             markup_inline.inline_keyboard.clear()
             markup_inline.add(item_buy)
-            await bot.send_photo(message.chat.id, img, f'Цена: {row[2]} RUB ≈ {round(b.convert_to_btc((row[2]), "RUB"), 7)} ₿',\
+            bot.send_photo(message.chat.id, img, f'Цена: {row[2]} RUB ≈ {round(b.convert_to_btc((row[2]), "RUB"), 7)} ₿',\
                                  reply_markup=markup_inline)
     elif message.text.strip() == 'Питер':
-        rows = await db_exec("SELECT id, product, cost FROM public.products WHERE city = 'Piter';")
+        rows =  db_exec("SELECT id, product, cost FROM public.products WHERE city = 'Piter';")
         for row in rows:
             img = open('data/' + ''.join(row[1]) + '.png', 'rb')
             item_buy = types.InlineKeyboardButton(text='Купить', callback_data=f'{row[0]}')
             markup_inline.inline_keyboard.clear()
             markup_inline.add(item_buy)
-            await bot.send_photo(message.chat.id, img, f'Цена: {row[2]} RUB ≈ {round(b.convert_to_btc((row[2]), "RUB"), 7)} ₿',\
+            bot.send_photo(message.chat.id, img, f'Цена: {row[2]} RUB ≈ {round(b.convert_to_btc((row[2]), "RUB"), 7)} ₿',\
                                  reply_markup=markup_inline)
     else:
-        await bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔")
+        bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔")
 
 
 @bot.callback_query_handler(lambda c: c.data)
 async def callback_inline(callback_query: types.CallbackQuery):
     if callback_query.data == '1':
         addr = primary_account.create_address()['address']
-        row = await db_exec("SELECT cost FROM public.products WHERE id = 1;")
+        row =  db_exec("SELECT cost FROM public.products WHERE id = 1;")
         msg = "<b>Вы выбрали Машинку для покупки в Москве</b> \n\n" \
               "Вам будет необходимо перевести по адресу ниже необходимую" \
               " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' +\
               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
-        await bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+        bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
         img = qrcode.make(addr)
         img.save('qr.png')
-        await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+        bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
     if callback_query.data == '2':
         addr = primary_account.create_address()['address']
-        row = await db_exec("SELECT cost FROM public.products WHERE id = 2;")
+        row =  db_exec("SELECT cost FROM public.products WHERE id = 2;")
         msg = "<b>Вы выбрали Кораблик для покупки в Москве</b> \n\n" \
               "Вам будет необходимо перевести по адресу ниже необходимую" \
               " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' +\
               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
-        await bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+        bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
         img = qrcode.make(addr)
         img.save('qr.png')
-        await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+        bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
     if callback_query.data == '3':
         addr = primary_account.create_address()['address']
-        row = await db_exec("SELECT cost FROM public.products WHERE id = 3;")
+        row =  db_exec("SELECT cost FROM public.products WHERE id = 3;")
         msg = "<b>Вы выбрали Вертолетик для покупки в Москве</b> \n\n" \
               "Вам будет необходимо перевести по адресу ниже необходимую" \
               " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' +\
               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
-        await bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+        bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
         img = qrcode.make(addr)
         img.save('qr.png')
-        await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+        bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
     if callback_query.data == '4':
         addr = primary_account.create_address()['address']
-        row = await db_exec("SELECT cost FROM public.products WHERE id = 4;")
+        row =  db_exec("SELECT cost FROM public.products WHERE id = 4;")
         msg = "<b>Вы выбрали Машинку для покупки в Питере</b> \n\n" \
               "Вам будет необходимо перевести по адресу ниже необходимую" \
               " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' +\
               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
-        await bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+        bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
         img = qrcode.make(addr)
         img.save('qr.png')
-        await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+        bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
     if callback_query.data == '5':
         addr = primary_account.create_address()['address']
-        row = await db_exec("SELECT cost FROM public.products WHERE id = 5;")
+        row =  db_exec("SELECT cost FROM public.products WHERE id = 5;")
         msg = "<b>Вы выбрали Кораблик для покупки в Питере</b> \n\n" \
               "Вам будет необходимо перевести по адресу ниже необходимую" \
               " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' +\
               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
-        await bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+        bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
         img = qrcode.make(addr)
         img.save('qr.png')
-        await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+        bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
     if callback_query.data == '6':
         addr = primary_account.create_address()['address']
-        row = await db_exec("SELECT cost FROM public.products WHERE id = 6;")
+        row =  db_exec("SELECT cost FROM public.products WHERE id = 6;")
         msg = "<b>Вы выбрали Вертолетик для покупки в Питере</b> \n\n" \
               "Вам будет необходимо перевести по адресу ниже необходимую" \
               " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' +\
               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
-        await bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+        bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
         img = qrcode.make(addr)
         img.save('qr.png')
-        await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+        bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
 
 
 @server.route(f'/{TOKEN}', methods=['POST'])
