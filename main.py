@@ -1,13 +1,13 @@
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
-from config import TOKEN, API_KEY, version, SECRET_PIN, db_exec
+from config import TOKEN, API_KEY, SECRET_API_KEY, db_exec
 from forex_python.bitcoin import BtcConverter
-from block_io import BlockIo
+from coinbase.wallet.client import Client
 import qrcode
 
-block_io = BlockIo(API_KEY, SECRET_PIN, version)
-block_io.base_url()
+client = Client(API_KEY, SECRET_API_KEY, api_version='2021-12-01')
+primary_account = client.get_primary_account()
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
@@ -57,7 +57,7 @@ async def handle_text(message: types.Message):
 @dp.callback_query_handler(lambda c: c.data)
 async def callback_inline(callback_query: types.CallbackQuery):
     if callback_query.data == '1':
-        addr = block_io.get_new_address()['data']['address']
+        addr = primary_account.create_address()['address']
         row = await db_exec("SELECT cost FROM public.products WHERE id = 1;")
         msg = "<b>Вы выбрали Машинку для покупки в Москве</b> \n\n" \
               "Вам будет необходимо перевести по адресу ниже необходимую" \
@@ -68,7 +68,7 @@ async def callback_inline(callback_query: types.CallbackQuery):
         img.save('qr.png')
         await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
     if callback_query.data == '2':
-        addr = block_io.get_new_address()['data']['address']
+        addr = primary_account.create_address()['address']
         row = await db_exec("SELECT cost FROM public.products WHERE id = 2;")
         msg = "<b>Вы выбрали Кораблик для покупки в Москве</b> \n\n" \
               "Вам будет необходимо перевести по адресу ниже необходимую" \
@@ -79,7 +79,7 @@ async def callback_inline(callback_query: types.CallbackQuery):
         img.save('qr.png')
         await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
     if callback_query.data == '3':
-        addr = block_io.get_new_address()['data']['address']
+        addr = primary_account.create_address()['address']
         row = await db_exec("SELECT cost FROM public.products WHERE id = 3;")
         msg = "<b>Вы выбрали Вертолетик для покупки в Москве</b> \n\n" \
               "Вам будет необходимо перевести по адресу ниже необходимую" \
@@ -90,7 +90,7 @@ async def callback_inline(callback_query: types.CallbackQuery):
         img.save('qr.png')
         await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
     if callback_query.data == '4':
-        addr = block_io.get_new_address()['data']['address']
+        addr = primary_account.create_address()['address']
         row = await db_exec("SELECT cost FROM public.products WHERE id = 4;")
         msg = "<b>Вы выбрали Машинку для покупки в Питере</b> \n\n" \
               "Вам будет необходимо перевести по адресу ниже необходимую" \
@@ -101,7 +101,7 @@ async def callback_inline(callback_query: types.CallbackQuery):
         img.save('qr.png')
         await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
     if callback_query.data == '5':
-        addr = block_io.get_new_address()['data']['address']
+        addr = primary_account.create_address()['address']
         row = await db_exec("SELECT cost FROM public.products WHERE id = 5;")
         msg = "<b>Вы выбрали Кораблик для покупки в Питере</b> \n\n" \
               "Вам будет необходимо перевести по адресу ниже необходимую" \
@@ -112,7 +112,7 @@ async def callback_inline(callback_query: types.CallbackQuery):
         img.save('qr.png')
         await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
     if callback_query.data == '6':
-        addr = block_io.get_new_address()['data']['address']
+        addr = primary_account.create_address()['address']
         row = await db_exec("SELECT cost FROM public.products WHERE id = 6;")
         msg = "<b>Вы выбрали Вертолетик для покупки в Питере</b> \n\n" \
               "Вам будет необходимо перевести по адресу ниже необходимую" \

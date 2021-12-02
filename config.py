@@ -2,9 +2,8 @@ from sshtunnel import SSHTunnelForwarder
 import psycopg2 as pg
 
 TOKEN = '2027170032:AAH-g30BipQVW7IwY_lao48A1RfjRomb4uY'
-SECRET_PIN = '444078AADCAF6696'
-API_KEY = '19af-fa32-c73b-01ac'
-version = 2
+SECRET_API_KEY = 'mkELT1yAiLtLfcP03JPAPQWFIGKUL6Dg'
+API_KEY = 'ACFm59QDykzIUBQf'
 
 
 async def db_exec(string):
