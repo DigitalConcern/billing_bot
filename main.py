@@ -13,7 +13,7 @@ import qrcode
 client = Client(API_KEY, SECRET_API_KEY, api_version='2021-12-01')
 primary_account = client.get_primary_account()
 
-bot = telebot(token=TOKEN)
+bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
 logger = telebot.logger
 logger.setLevel(logging.DEBUG)
