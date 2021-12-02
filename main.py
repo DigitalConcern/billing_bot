@@ -6,6 +6,7 @@ from coinbase.wallet.client import Client
 from flask import Flask, request
 import aiogram
 import os
+import logging
 import psycopg2 as pg
 import qrcode
 
@@ -14,6 +15,8 @@ primary_account = client.get_primary_account()
 
 bot = telebot(token=TOKEN)
 server = Flask(__name__)
+logger = telebot.logger
+logger.setLevel(logging.DEBUG)
 b = BtcConverter()
 
 
