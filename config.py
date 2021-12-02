@@ -4,6 +4,7 @@ import psycopg2 as pg
 TOKEN = '2027170032:AAH-g30BipQVW7IwY_lao48A1RfjRomb4uY'
 SECRET_API_KEY = 'mkELT1yAiLtLfcP03JPAPQWFIGKUL6Dg'
 API_KEY = 'ACFm59QDykzIUBQf'
+APP_URL = 'http://foryubiz.com/' + TOKEN
 
 
 async def db_exec(string):

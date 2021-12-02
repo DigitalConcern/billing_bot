@@ -1,21 +1,24 @@
-from aiogram import Bot, types
-from aiogram.dispatcher import Dispatcher
-from aiogram.utils import executor
-from config import TOKEN, API_KEY, SECRET_API_KEY, db_exec
+import telebot
+from telebot import types
+from config import *
 from forex_python.bitcoin import BtcConverter
 from coinbase.wallet.client import Client
+from flask import Flask, request
+import aiogram
+import os
+import psycopg2 as pg
 import qrcode
 
 client = Client(API_KEY, SECRET_API_KEY, api_version='2021-12-01')
 primary_account = client.get_primary_account()
 
-bot = Bot(token=TOKEN)
-dp = Dispatcher(bot)
+bot = telebot(token=TOKEN)
+server = Flask(__name__)
 b = BtcConverter()
 
 
 # Команда start
-@dp.message_handler(commands=["start"])
+@bot.message_handler(commands=["start"])
 async def start(m, res=False):
     # Добавляем две кнопки
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -27,7 +30,7 @@ async def start(m, res=False):
 
 
 # Получение сообщений от юзера
-@dp.message_handler(content_types=["text"])
+@bot.message_handler(content_types=["text"])
 async def handle_text(message: types.Message):
     markup_inline = types.InlineKeyboardMarkup()
 
@@ -54,7 +57,7 @@ async def handle_text(message: types.Message):
         await bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔")
 
 
-@dp.callback_query_handler(lambda c: c.data)
+@bot.callback_query_handler(lambda c: c.data)
 async def callback_inline(callback_query: types.CallbackQuery):
     if callback_query.data == '1':
         addr = primary_account.create_address()['address']
@@ -124,6 +127,16 @@ async def callback_inline(callback_query: types.CallbackQuery):
         await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
 
 
+@server.route(f'/{TOKEN}', methods=['POST'])
+def redirect_message():
+    json_string = request.get_data().decode('utf-8')
+    update = telebot.types.Update.de_json(json_string)
+    bot.process_new_updates([update])
+    return '!', 200
+
+
 # Запускаем бота
 if __name__ == '__main__':
-    executor.start_polling(dp)
+    bot.remove_webhook()
+    bot.set_webhook(url=APP_URL)
+    server.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
