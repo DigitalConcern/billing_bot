@@ -45,7 +45,7 @@ def handle_city(message: types.Message):
     cur.execute(f"SELECT DISTINCT category FROM products WHERE city = '{message.text.strip()}';")
     rows = cur.fetchall()
     if not rows:
-        bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔 \n "
+        bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔 \n"
                                           "Выбери из предложенных в меню!")
     else:
         for row in rows:
