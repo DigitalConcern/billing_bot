@@ -85,7 +85,7 @@ def handle_category(message: types.Message):
 def callback_inline(callback_query: types.CallbackQuery):
     markup_inline = types.InlineKeyboardMarkup()
     if callback_query.data == 'category 1':
-        rows = cur.execute("SELECT product, price FROM products WHERE category = 'category 1';")
+        rows = cur.execute("SELECT name, price FROM products WHERE category = 'category 1';")
         rows.fetchall()
         for row in rows:
             img = open('data/' + ''.join(row[0]) + '.png', 'rb')
@@ -98,7 +98,7 @@ def callback_inline(callback_query: types.CallbackQuery):
                            f'Цена за одну штуку: {row[1]} RUB ≈ {round(b.convert_to_btc((row[1]), "RUB"), 7)} ₿',
                            reply_markup=markup_inline)
     if callback_query.data == 'category 2':
-        rows = cur.execute("SELECT product, price FROM products WHERE category = 'category 1';")
+        rows = cur.execute("SELECT name, price FROM products WHERE category = 'category 1';")
         rows.fetchall()
         for row in rows:
             img = open('data/' + ''.join(row[0]) + '.png', 'rb')
