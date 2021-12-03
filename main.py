@@ -22,6 +22,7 @@ logger = telebot.logger
 logger.setLevel(logging.DEBUG)
 b = BtcConverter()
 
+city = ''
 
 # Команда start
 @bot.message_handler(commands=["start"])
@@ -42,11 +43,11 @@ def start(m, res=False):
 def handle_city(message: types.Message):
     markup_inline = types.InlineKeyboardMarkup()
     cur.execute(f"SELECT DISTINCT category FROM products WHERE city = '{message.text.strip()}';")
-    if cur.fetchall() == "":
+    rows = cur.fetchall()
+    if rows[0] == '()':
         bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔 \n "
                                           "Выбери из предложенных в меню!")
     else:
-        rows = cur.fetchall()
         for row in rows:
             item = types.InlineKeyboardButton(text=''.join(row[0]), callback_data=f'{row[0]}')
             markup_inline.add(item)
