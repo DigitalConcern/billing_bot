@@ -25,7 +25,7 @@ b = BtcConverter()
 
 # Команда start
 @bot.message_handler(commands=["start"])
-async def start(m, res=False):
+def start(m, res=False):
     # Добавляем две кнопки
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     item1 = types.KeyboardButton("Москва")
@@ -37,7 +37,7 @@ async def start(m, res=False):
 
 # Получение сообщений от юзера
 @bot.message_handler(content_types=["text"])
-async def handle_text(message: types.Message):
+def handle_text(message: types.Message):
     markup_inline = types.InlineKeyboardMarkup()
 
     if message.text.strip() == 'Москва':
@@ -66,7 +66,7 @@ async def handle_text(message: types.Message):
 
 
 @bot.callback_query_handler(lambda c: c.data)
-async def callback_inline(callback_query: types.CallbackQuery):
+def callback_inline(callback_query: types.CallbackQuery):
     if callback_query.data == '1':
         addr = primary_account.create_address()['address']
         row = cur.execute("SELECT cost FROM public.products WHERE id = 1;").fetchall()
