@@ -54,7 +54,7 @@ def handle_city(message: types.Message):
 
 
 # Получение сообщений от юзера
-@bot.callback_query_handler(lambda c: c.data.startwith('city'))
+@bot.callback_query_handler(lambda c: c.data.startswith('city'))
 def callback_inline_category(callback_query: types.CallbackQuery):
     city = callback_query.data.split('_')[2]
     markup_inline = types.InlineKeyboardMarkup()
@@ -90,7 +90,7 @@ def callback_inline_category(callback_query: types.CallbackQuery):
                            reply_markup=markup_inline)
 
 
-@bot.callback_query_handler(lambda c: c.data.startwith('id'))
+@bot.callback_query_handler(lambda c: c.data.startswith('id'))
 def callback_inline_product(callback_query: types.CallbackQuery):
     amount = callback_query.data.split('_')[1]
     id = callback_query.data.split('_')[0]
