@@ -56,31 +56,6 @@ def handle_city(message: types.Message):
 
 
 # Получение сообщений от юзера
-@bot.message_handler(content_types=["text"])
-def handle_category(message: types.Message):
-    markup_inline = types.InlineKeyboardMarkup()
-    if message.text.strip() == 'category 1':
-        rows = cur.execute("SELECT product, price FROM products WHERE category = 'category 1';").fetchall()
-        for row in rows:
-            img = open('data/' + ''.join(row[1]) + '.png', 'rb')
-            item_buy = types.InlineKeyboardButton(text='Купить', callback_data=f'{row[0]}')
-            markup_inline.keyboard.clear()
-            markup_inline.add(item_buy)
-            bot.send_photo(message.chat.id, img,
-                           f'Цена: {row[2]} RUB ≈ {round(b.convert_to_btc((row[2]), "RUB"), 7)} ₿',
-                           reply_markup=markup_inline)
-    elif message.text.strip() == 'Питер':
-        rows = cur.execute("SELECT id, product, cost FROM public.products WHERE city = 'Piter';").fetchall()
-        for row in rows:
-            img = open('data/' + ''.join(row[1]) + '.png', 'rb')
-            item_buy = types.InlineKeyboardButton(text='Купить', callback_data=f'{row[0]}')
-            markup_inline.keyboard.clear()
-            markup_inline.add(item_buy)
-            bot.send_photo(message.chat.id, img,
-                           f'Цена: {row[2]} RUB ≈ {round(b.convert_to_btc((row[2]), "RUB"), 7)} ₿',
-                           reply_markup=markup_inline)
-
-
 @bot.callback_query_handler(lambda c: c.data)
 def callback_inline(callback_query: types.CallbackQuery):
     markup_inline = types.InlineKeyboardMarkup()
@@ -100,7 +75,7 @@ def callback_inline(callback_query: types.CallbackQuery):
                            f'Выберите сколько товара Вы хотите купить',
                            reply_markup=markup_inline)
     if callback_query.data == 'category 2':
-        cur.execute("SELECT name, price FROM products WHERE category = 'category 1';")
+        cur.execute("SELECT name, price FROM products WHERE category = 'category 2';")
         rows = cur.fetchall()
         for row in rows:
             markup_inline.keyboard.clear()
