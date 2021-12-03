@@ -104,7 +104,7 @@ def callback_inline_category(callback_query: types.CallbackQuery):
 #     bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML")
 #     img = qrcode.make(addr)
 #     img.save('qr.png')
-    bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+#     bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
 
 
 @server.route(f'/{TOKEN}', methods=['POST'])
