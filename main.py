@@ -33,8 +33,9 @@ def start(m, res=False):
     for row in rows:
         item = types.KeyboardButton(''.join(row[0]))
         markup.add(item)
-    cur.execute(f'INSERT INTO users(id, last_trans) VALUES ({m.chat.id}, false);')
-    connection.commit()
+    cur.execute()
+    # cur.execute(f'INSERT INTO users(id, last_trans) VALUES ({m.chat.id}, false);')
+    # connection.commit()
     bot.send_message(m.chat.id, "Выбери город, в котором планируешь сделать заказ!", reply_markup=markup)
 
 
