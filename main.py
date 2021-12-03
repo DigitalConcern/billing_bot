@@ -41,12 +41,16 @@ def start(m, res=False):
 @bot.message_handler(content_types=["text"])
 def handle_city(message: types.Message):
     markup_inline = types.InlineKeyboardMarkup()
-    cur.execute(f"SELECT category FROM products WHERE city = '{message.text.strip()}';")
-    rows = cur.fetchall()
-    for row in rows:
-        item = types.InlineKeyboardButton(text=''.join(row[0]), callback_data=f'{row[0]}')
-        markup_inline.add(item)
-    bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!", reply_markup=markup_inline)
+    cur.execute(f"SELECT DISTINCT category FROM products WHERE city = '{message.text.strip()}';")
+    if cur == "NULL":
+        bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔 \n "
+                                          "Выбери из предложенных в меню!")
+    else:
+        rows = cur.fetchall()
+        for row in rows:
+            item = types.InlineKeyboardButton(text=''.join(row[0]), callback_data=f'{row[0]}')
+            markup_inline.add(item)
+        bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!", reply_markup=markup_inline)
 
 
 # # Получение сообщений от юзера
