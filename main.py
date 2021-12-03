@@ -90,20 +90,20 @@ def callback_inline_category(callback_query: types.CallbackQuery):
                            reply_markup=markup_inline)
 
 
-@bot.callback_query_handler(lambda c: c.data)
-def callback_inline_product(callback_query: types.CallbackQuery):
-    amount = callback_query.data.split('_')[1]
-    id = callback_query.data.split('_')[0]
-    addr = primary_account.create_address()['address']
-    row = cur.execute(f"SELECT price, name FROM public.products WHERE id = {id};")
-    msg = f"<b>Вы выбрали {row[1]} для покупки в Москве</b> \n\n" \
-          "Вам будет необходимо перевести по адресу ниже необходимую" \
-          " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7) * amount} ₿</b>' + \
-          " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n"
-    bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
-    bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML")
-    img = qrcode.make(addr)
-    img.save('qr.png')
+# @bot.callback_query_handler(lambda c: c.data)
+# def callback_inline_product(callback_query: types.CallbackQuery):
+#     amount = callback_query.data.split('_')[1]
+#     id = callback_query.data.split('_')[0]
+#     addr = primary_account.create_address()['address']
+#     row = cur.execute(f"SELECT price, name FROM public.products WHERE id = {id};")
+#     msg = f"<b>Вы выбрали {row[1]} для покупки в Москве</b> \n\n" \
+#           "Вам будет необходимо перевести по адресу ниже необходимую" \
+#           " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7) * amount} ₿</b>' + \
+#           " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n"
+#     bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+#     bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML")
+#     img = qrcode.make(addr)
+#     img.save('qr.png')
     bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
 
 
