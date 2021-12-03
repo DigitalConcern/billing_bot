@@ -86,7 +86,7 @@ def callback_inline(callback_query: types.CallbackQuery):
     markup_inline = types.InlineKeyboardMarkup()
     if callback_query.data == 'category 1':
         rows = cur.execute("SELECT name, price FROM products WHERE category = 'category 1';")
-        rows.fetchall()
+        rows = cur.fetchall()
         for row in rows:
             img = open('data/' + ''.join(row[0]) + '.png', 'rb')
             item_buy1 = types.InlineKeyboardButton(text='1', callback_data=f'{row[0]}' + '1')
@@ -98,8 +98,8 @@ def callback_inline(callback_query: types.CallbackQuery):
                            f'Цена за одну штуку: {row[1]} RUB ≈ {round(b.convert_to_btc((row[1]), "RUB"), 7)} ₿',
                            reply_markup=markup_inline)
     if callback_query.data == 'category 2':
-        rows = cur.execute("SELECT name, price FROM products WHERE category = 'category 1';")
-        rows.fetchall()
+        cur.execute("SELECT name, price FROM products WHERE category = 'category 1';")
+        rows = cur.fetchall()
         for row in rows:
             img = open('data/' + ''.join(row[0]) + '.png', 'rb')
             item_buy1 = types.InlineKeyboardButton(text='1', callback_data=f'{row[0]}' + '1')
