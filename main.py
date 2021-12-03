@@ -28,11 +28,11 @@ b = BtcConverter()
 def start(m, res=False):
     # Добавляем две кнопки
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1 = types.KeyboardButton("Москва")
-    item2 = types.KeyboardButton("Питер")
-    markup.add(item1)
-    markup.add(item2)
-    bot.send_message(m.chat.id, "Выбери свой город!", reply_markup=markup)
+    rows = cur.execute('SELECT category FROM products').fetchall()
+    for row in rows:
+        item = types.KeyboardButton(row)
+        markup.add(item)
+    bot.send_message(m.chat.id, "Выбери категорию, которая тебя интересует!", reply_markup=markup)
 
 
 # Получение сообщений от юзера
