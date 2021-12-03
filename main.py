@@ -31,9 +31,10 @@ def start(m, res=False):
     cur.execute('SELECT DISTINCT city FROM public.products;')
     rows = cur.fetchall()
     for row in rows:
-        item = types.KeyboardButton(str(row))
+        item = types.KeyboardButton(str(row[0][0]))
         markup.add(item)
     cur.execute(f'INSERT INTO users(id, last_trans) VALUES ({m.chat.id}, false);')
+    connection.commit()
     bot.send_message(m.chat.id, "Выбери город, в котором планируешь покупать заказ!", reply_markup=markup)
 
 
