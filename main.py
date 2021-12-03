@@ -28,111 +28,121 @@ b = BtcConverter()
 def start(m, res=False):
     # Добавляем две кнопки
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    rows = cur.execute('SELECT category FROM products').fetchall()
+    rows = cur.execute('SELECT city FROM products').fetchall()
     for row in rows:
         item = types.KeyboardButton(row)
         markup.add(item)
-    bot.send_message(m.chat.id, "Выбери категорию, которая тебя интересует!", reply_markup=markup)
+    cur.execute(f'INSERT INTO users VALUES {m.chat.id}')
+    bot.send_message(m.chat.id, "Выбери город, в котором планируешь покупать заказ!", reply_markup=markup)
 
 
-# Получение сообщений от юзера
 @bot.message_handler(content_types=["text"])
-def handle_text(message: types.Message):
+def handle_city(message: types.Message):
     markup_inline = types.InlineKeyboardMarkup()
-
-    if message.text.strip() == 'Москва':
-        rows = cur.execute("SELECT id, product, cost FROM public.products WHERE city = 'Moscow';").fetchall()
-
-        for row in rows:
-            img = open('data/' + ''.join(row[1]) + '.png', 'rb')
-            item_buy = types.InlineKeyboardButton(text='Купить', callback_data=f'{row[0]}')
-            markup_inline.keyboard.clear()
-            markup_inline.add(item_buy)
-            bot.send_photo(message.chat.id, img,
-                           f'Цена: {row[2]} RUB ≈ {round(b.convert_to_btc((row[2]), "RUB"), 7)} ₿',
-                           reply_markup=markup_inline)
-    elif message.text.strip() == 'Питер':
-        rows = cur.execute("SELECT id, product, cost FROM public.products WHERE city = 'Piter';").fetchall()
-        for row in rows:
-            img = open('data/' + ''.join(row[1]) + '.png', 'rb')
-            item_buy = types.InlineKeyboardButton(text='Купить', callback_data=f'{row[0]}')
-            markup_inline.keyboard.clear()
-            markup_inline.add(item_buy)
-            bot.send_photo(message.chat.id, img,
-                           f'Цена: {row[2]} RUB ≈ {round(b.convert_to_btc((row[2]), "RUB"), 7)} ₿',
-                           reply_markup=markup_inline)
-    else:
-        bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔")
+    rows = cur.execute(f'SELECT category FROM products WHERE city = {message.text.strip()}').fetchall()
+    for row in rows:
+        item = types.KeyboardButton(row)
+        markup_inline.add(item)
+    bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!", reply_markup=markup_inline)
 
 
-@bot.callback_query_handler(lambda c: c.data)
-def callback_inline(callback_query: types.CallbackQuery):
-    if callback_query.data == '1':
-        addr = primary_account.create_address()['address']
-        row = cur.execute("SELECT cost FROM public.products WHERE id = 1;").fetchall()
-        msg = "<b>Вы выбрали Машинку для покупки в Москве</b> \n\n" \
-              "Вам будет необходимо перевести по адресу ниже необходимую" \
-              " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' + \
-              " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
-        bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
-        img = qrcode.make(addr)
-        img.save('qr.png')
-        bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
-    if callback_query.data == '2':
-        addr = primary_account.create_address()['address']
-        row = cur.execute("SELECT cost FROM public.products WHERE id = 2;")
-        msg = "<b>Вы выбрали Кораблик для покупки в Москве</b> \n\n" \
-              "Вам будет необходимо перевести по адресу ниже необходимую" \
-              " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' + \
-              " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
-        bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
-        img = qrcode.make(addr)
-        img.save('qr.png')
-        bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
-    if callback_query.data == '3':
-        addr = primary_account.create_address()['address']
-        row = cur.execute("SELECT cost FROM public.products WHERE id = 3;").fetchall()
-        msg = "<b>Вы выбрали Вертолетик для покупки в Москве</b> \n\n" \
-              "Вам будет необходимо перевести по адресу ниже необходимую" \
-              " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' + \
-              " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
-        bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
-        img = qrcode.make(addr)
-        img.save('qr.png')
-        bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
-    if callback_query.data == '4':
-        addr = primary_account.create_address()['address']
-        row = cur.execute("SELECT cost FROM public.products WHERE id = 4;").fetchall()
-        msg = "<b>Вы выбрали Машинку для покупки в Питере</b> \n\n" \
-              "Вам будет необходимо перевести по адресу ниже необходимую" \
-              " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' + \
-              " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
-        bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
-        img = qrcode.make(addr)
-        img.save('qr.png')
-        bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
-    if callback_query.data == '5':
-        addr = primary_account.create_address()['address']
-        row = cur.execute("SELECT cost FROM public.products WHERE id = 5;").fetchall()
-        msg = "<b>Вы выбрали Кораблик для покупки в Питере</b> \n\n" \
-              "Вам будет необходимо перевести по адресу ниже необходимую" \
-              " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' + \
-              " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
-        bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
-        img = qrcode.make(addr)
-        img.save('qr.png')
-        bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
-    if callback_query.data == '6':
-        addr = primary_account.create_address()['address']
-        row = cur.execute("SELECT cost FROM public.products WHERE id = 6;").fetchall()
-        msg = "<b>Вы выбрали Вертолетик для покупки в Питере</b> \n\n" \
-              "Вам будет необходимо перевести по адресу ниже необходимую" \
-              " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' + \
-              " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
-        bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
-        img = qrcode.make(addr)
-        img.save('qr.png')
-        bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+# # Получение сообщений от юзера
+# @bot.message_handler(content_types=["text"])
+# def handle_category(message: types.Message):
+#     markup_inline = types.InlineKeyboardMarkup()
+#
+#     if message.text.strip() == 'category 1':
+#         rows = cur.execute("SELECT product, price FROM products WHERE category = 'category 1';").fetchall()
+#         for row in rows:
+#             img = open('data/' + ''.join(row[1]) + '.png', 'rb')
+#             item_buy = types.InlineKeyboardButton(text='Купить', callback_data=f'{row[0]}')
+#             markup_inline.keyboard.clear()
+#             markup_inline.add(item_buy)
+#             bot.send_photo(message.chat.id, img,
+#                            f'Цена: {row[2]} RUB ≈ {round(b.convert_to_btc((row[2]), "RUB"), 7)} ₿',
+#                            reply_markup=markup_inline)
+#     elif message.text.strip() == 'Питер':
+#         rows = cur.execute("SELECT id, product, cost FROM public.products WHERE city = 'Piter';").fetchall()
+#         for row in rows:
+#             img = open('data/' + ''.join(row[1]) + '.png', 'rb')
+#             item_buy = types.InlineKeyboardButton(text='Купить', callback_data=f'{row[0]}')
+#             markup_inline.keyboard.clear()
+#             markup_inline.add(item_buy)
+#             bot.send_photo(message.chat.id, img,
+#                            f'Цена: {row[2]} RUB ≈ {round(b.convert_to_btc((row[2]), "RUB"), 7)} ₿',
+#                            reply_markup=markup_inline)
+#     else:
+#         bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔")
+#
+#
+# @bot.callback_query_handler(lambda c: c.data)
+# def callback_inline(callback_query: types.CallbackQuery):
+#     if callback_query.data == '1':
+#         addr = primary_account.create_address()['address']
+#         row = cur.execute("SELECT cost FROM public.products WHERE id = 1;").fetchall()
+#         msg = "<b>Вы выбрали Машинку для покупки в Москве</b> \n\n" \
+#               "Вам будет необходимо перевести по адресу ниже необходимую" \
+#               " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' + \
+#               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
+#         bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+#         img = qrcode.make(addr)
+#         img.save('qr.png')
+#         bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+#     if callback_query.data == '2':
+#         addr = primary_account.create_address()['address']
+#         row = cur.execute("SELECT cost FROM public.products WHERE id = 2;")
+#         msg = "<b>Вы выбрали Кораблик для покупки в Москве</b> \n\n" \
+#               "Вам будет необходимо перевести по адресу ниже необходимую" \
+#               " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' + \
+#               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
+#         bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+#         img = qrcode.make(addr)
+#         img.save('qr.png')
+#         bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+#     if callback_query.data == '3':
+#         addr = primary_account.create_address()['address']
+#         row = cur.execute("SELECT cost FROM public.products WHERE id = 3;").fetchall()
+#         msg = "<b>Вы выбрали Вертолетик для покупки в Москве</b> \n\n" \
+#               "Вам будет необходимо перевести по адресу ниже необходимую" \
+#               " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' + \
+#               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
+#         bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+#         img = qrcode.make(addr)
+#         img.save('qr.png')
+#         bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+#     if callback_query.data == '4':
+#         addr = primary_account.create_address()['address']
+#         row = cur.execute("SELECT cost FROM public.products WHERE id = 4;").fetchall()
+#         msg = "<b>Вы выбрали Машинку для покупки в Питере</b> \n\n" \
+#               "Вам будет необходимо перевести по адресу ниже необходимую" \
+#               " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' + \
+#               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
+#         bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+#         img = qrcode.make(addr)
+#         img.save('qr.png')
+#         bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+#     if callback_query.data == '5':
+#         addr = primary_account.create_address()['address']
+#         row = cur.execute("SELECT cost FROM public.products WHERE id = 5;").fetchall()
+#         msg = "<b>Вы выбрали Кораблик для покупки в Питере</b> \n\n" \
+#               "Вам будет необходимо перевести по адресу ниже необходимую" \
+#               " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' + \
+#               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
+#         bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+#         img = qrcode.make(addr)
+#         img.save('qr.png')
+#         bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+#     if callback_query.data == '6':
+#         addr = primary_account.create_address()['address']
+#         row = cur.execute("SELECT cost FROM public.products WHERE id = 6;").fetchall()
+#         msg = "<b>Вы выбрали Вертолетик для покупки в Питере</b> \n\n" \
+#               "Вам будет необходимо перевести по адресу ниже необходимую" \
+#               " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7)} ₿</b>' + \
+#               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n" + f'<code>{addr}</code>'
+#         bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+#         img = qrcode.make(addr)
+#         img.save('qr.png')
+#         bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
 
 
 @server.route(f'/{TOKEN}', methods=['POST'])
