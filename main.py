@@ -41,7 +41,7 @@ def start(m, res=False):
 @bot.message_handler(content_types=["text"])
 def handle_city(message: types.Message):
     markup_inline = types.InlineKeyboardMarkup()
-    cur.execute(f'SELECT category FROM products WHERE city = {message.text.strip()}')
+    cur.execute(f'SELECT category FROM products WHERE city = "{message.text.strip()}" ')
     rows = cur.fetchall()
     for row in rows:
         item = types.KeyboardButton(row)
