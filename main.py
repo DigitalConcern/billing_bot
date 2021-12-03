@@ -85,9 +85,10 @@ def handle_category(message: types.Message):
 def callback_inline(callback_query: types.CallbackQuery):
     markup_inline = types.InlineKeyboardMarkup()
     if callback_query.data == 'category 1':
-        rows = cur.execute("SELECT name, price FROM products WHERE category = 'category 1';")
+        cur.execute("SELECT name, price FROM products WHERE category = 'category 1';")
         rows = cur.fetchall()
         for row in rows:
+            markup_inline.keyboard.clear()
             img = open('data/' + ''.join(row[0]) + '.png', 'rb')
             item_buy1 = types.InlineKeyboardButton(text='1', callback_data=f'{row[0]}' + '1')
             item_buy3 = types.InlineKeyboardButton(text='3', callback_data=f'{row[0]}' + '3')
@@ -95,12 +96,14 @@ def callback_inline(callback_query: types.CallbackQuery):
             item_buy10 = types.InlineKeyboardButton(text='10', callback_data=f'{row[0]}' + '10')
             markup_inline.row(item_buy1, item_buy3, item_buy5, item_buy10)
             bot.send_photo(callback_query.from_user.id, img,
-                           f'Цена за одну штуку: {row[1]} RUB ≈ {round(b.convert_to_btc((row[1]), "RUB"), 7)} ₿',
+                           f'Цена за одну штуку: {row[1]} RUB ≈ {round(b.convert_to_btc((row[1]), "RUB"), 7)} ₿\n'
+                           f'Выберите сколько товара Вы хотите купить',
                            reply_markup=markup_inline)
     if callback_query.data == 'category 2':
         cur.execute("SELECT name, price FROM products WHERE category = 'category 1';")
         rows = cur.fetchall()
         for row in rows:
+            markup_inline.keyboard.clear()
             img = open('data/' + ''.join(row[0]) + '.png', 'rb')
             item_buy1 = types.InlineKeyboardButton(text='1', callback_data=f'{row[0]}' + '1')
             item_buy3 = types.InlineKeyboardButton(text='3', callback_data=f'{row[0]}' + '3')
@@ -108,7 +111,8 @@ def callback_inline(callback_query: types.CallbackQuery):
             item_buy10 = types.InlineKeyboardButton(text='10', callback_data=f'{row[0]}' + '10')
             markup_inline.row(item_buy1, item_buy3, item_buy5, item_buy10)
             bot.send_photo(callback_query.from_user.id, img,
-                           f'Цена за одну штуку: {row[1]} RUB ≈ {round(b.convert_to_btc((row[1]), "RUB"), 7)} ₿',
+                           f'Цена за одну штуку: {row[1]} RUB ≈ {round(b.convert_to_btc((row[1]), "RUB"), 7)} ₿'
+                           f'Выберите сколько товара Вы хотите купить',
                            reply_markup=markup_inline)
 
 
