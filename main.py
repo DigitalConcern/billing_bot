@@ -28,12 +28,12 @@ b = BtcConverter()
 def start(m, res=False):
     # Добавляем две кнопки
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    cur.execute('SELECT city FROM public.products')
+    cur.execute('SELECT city FROM public.products;')
     rows = cur.fetchall()
     for row in rows:
         item = types.KeyboardButton(row)
         markup.add(item)
-    cur.execute(f'INSERT INTO users VALUES {m.chat.id}')
+    cur.execute(f'INSERT INTO users(id, last_trans) VALUES ({m.chat.id}, false);')
     bot.send_message(m.chat.id, "Выбери город, в котором планируешь покупать заказ!", reply_markup=markup)
 
 
