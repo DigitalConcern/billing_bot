@@ -49,7 +49,7 @@ def handle_city(message: types.Message):
                                           "Выбери из предложенных в меню!")
     else:
         for row in rows:
-            item = types.InlineKeyboardButton(text=''.join(row[0]), callback_data=f'{row[0]}')
+            item = types.InlineKeyboardButton(text=''.join(row[0]), callback_data=f'{"".join(row[0])}')
             markup_inline.add(item)
         bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!", reply_markup=markup_inline)
 
