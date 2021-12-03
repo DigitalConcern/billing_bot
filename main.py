@@ -28,7 +28,8 @@ b = BtcConverter()
 def start(m, res=False):
     # Добавляем две кнопки
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    rows = cur.execute('SELECT city FROM products').fetchall()
+    cur.execute('SELECT city FROM public.products')
+    rows = cur.fetchall()
     for row in rows:
         item = types.KeyboardButton(row)
         markup.add(item)
@@ -39,7 +40,8 @@ def start(m, res=False):
 @bot.message_handler(content_types=["text"])
 def handle_city(message: types.Message):
     markup_inline = types.InlineKeyboardMarkup()
-    rows = cur.execute(f'SELECT category FROM products WHERE city = {message.text.strip()}').fetchall()
+    cur.execute(f'SELECT category FROM products WHERE city = {message.text.strip()}')
+    rows = cur.fetchall()
     for row in rows:
         item = types.KeyboardButton(row)
         markup_inline.add(item)
