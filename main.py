@@ -107,6 +107,7 @@ def callback_inline_category(callback_query: types.CallbackQuery):
             cur.execute(f'INSERT INTO users(id, last_trans) VALUES ({callback_query.from_user.id}, false);')
             connection.commit()
         if callback_query.data.split('_')[1] == 'no':
+            bot.send_message(callback_query.from_user.id, last_msgs)
             for msg in last_msgs:
                 bot.delete_message(callback_query.from_user.id, msg)
 
