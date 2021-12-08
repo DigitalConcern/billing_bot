@@ -57,7 +57,7 @@ def handle_city(message: types.Message):
 # Получение сообщений от юзера
 @bot.callback_query_handler(lambda c: True)
 def callback_inline_category(callback_query: types.CallbackQuery):
-    if callback_query.data.startswith('city'):
+    if callback_query.data.split('_')[0] == 'city':
         city = callback_query.data.split('_')[2]
         markup_inline = types.InlineKeyboardMarkup()
         if callback_query.data == 'category 1':
@@ -76,7 +76,7 @@ def callback_inline_category(callback_query: types.CallbackQuery):
                                f'Выберите сколько товара Вы хотите купить',
                                reply_markup=markup_inline)
         if callback_query.data == 'category 2':
-            cur.execute(f"SELECT name, price FROM products WHERE category = 'category 2' AND city = {city};")
+            cur.execute(f"SELECT name, price, id FROM products WHERE category = 'category 2' AND city = {city};")
             rows = cur.fetchall()
             for row in rows:
                 markup_inline.keyboard.clear()
@@ -90,7 +90,7 @@ def callback_inline_category(callback_query: types.CallbackQuery):
                                f'{row[0]}\nЦена за одну штуку: {row[1]} RUB ≈ {round(b.convert_to_btc((row[1]), "RUB"), 7)} ₿\n'
                                f'Выберите сколько товара Вы хотите купить',
                                reply_markup=markup_inline)
-    if callback_query.data.startswith('id'):
+    if callback_query.data.split('_')[0] == 'id':
         amount = callback_query.data.split('_')[1]
         id = callback_query.data.split('_')[0]
         addr = primary_account.create_address()['address']
