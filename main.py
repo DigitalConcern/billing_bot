@@ -58,7 +58,6 @@ def handle_city(message: types.Message):
 # Получение сообщений от юзера
 @bot.callback_query_handler(lambda c: c.data)
 def callback_inline_category(callback_query: types.CallbackQuery):
-    last_msgs = []
 
     if callback_query.data.split('_')[0] == 'city':
         city = callback_query.data.split('_')[2]
@@ -96,10 +95,11 @@ def callback_inline_category(callback_query: types.CallbackQuery):
         img = qrcode.make(addr)
         img.save('qr.png')
         bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
-        callback_query.data = ''
 
         cur.execute(f'INSERT INTO users(id, last_trans) VALUES ({callback_query.from_user.id}, false);')
         connection.commit()
+
+        callback_query.data = ''
 
     #     markup_inline = types.InlineKeyboardMarkup()
     #     item_yes = types.InlineKeyboardButton(text='Да', callback_data='ans_yes')
