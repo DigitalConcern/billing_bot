@@ -110,7 +110,7 @@ def callback_inline_category(callback_query: types.CallbackQuery):
             connection.commit()
         if callback_query.data.split('_')[1] == 'no':
             for msg in last_msgs:
-                bot.send_message(callback_query.from_user.id, msg)
+                bot.send_message(callback_query.from_user.id, str(msg))
                 bot.delete_message(callback_query.from_user.id, msg)
 
 
