@@ -83,7 +83,7 @@ def callback_inline_category(callback_query: types.CallbackQuery):
         cur.execute(f"SELECT price, name, city FROM products WHERE id = {id};")
         row = cur.fetchone()
         value = round(b.convert_to_btc(row[0], "RUB"), 7) * int(amount)
-        msg = f"<b>Вы выбрали {row[1]} в количестве {amount} для покупки в {row[2]}</b> \n\n" \
+        msg = f"<b>Вы выбрали {row[1]} в количестве {amount} штук(а) для покупки в {row[2]}</b> \n\n" \
               "Вам нужно в течение 15 минут перевести по адресу ниже необходимую" \
               " сумму ≈" + f'<b>{value} ₿</b>' + \
               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n"
