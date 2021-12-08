@@ -59,37 +59,22 @@ def handle_city(message: types.Message):
 def callback_inline_category(callback_query: types.CallbackQuery):
     if callback_query.data.split('_')[0] == 'city':
         city = callback_query.data.split('_')[2]
+        category = callback_query.data.split('_')[1]
         markup_inline = types.InlineKeyboardMarkup()
-        if callback_query.data == 'category 1':
-            cur.execute(f"SELECT name, price, id FROM products WHERE category = 'category 1' AND city = {city};")
-            rows = cur.fetchall()
-            for row in rows:
-                markup_inline.keyboard.clear()
-                img = open('data/' + ''.join(row[0]) + '.png', 'rb')
-                item_buy1 = types.InlineKeyboardButton(text='1', callback_data=f'id_{row[2]}' + '_1')
-                item_buy3 = types.InlineKeyboardButton(text='3', callback_data=f'id_{row[2]}' + '_3')
-                item_buy5 = types.InlineKeyboardButton(text='5', callback_data=f'id_{row[2]}' + '_5')
-                item_buy10 = types.InlineKeyboardButton(text='10', callback_data=f'id_{row[2]}' + '_10')
-                markup_inline.row(item_buy1, item_buy3, item_buy5, item_buy10)
-                bot.send_photo(callback_query.from_user.id, img,
-                               f'{row[0]}\nЦена за одну штуку: {row[1]} RUB ≈ {round(b.convert_to_btc((row[1]), "RUB"), 7)} ₿\n'
-                               f'Выберите сколько товара Вы хотите купить',
-                               reply_markup=markup_inline)
-        if callback_query.data == 'category 2':
-            cur.execute(f"SELECT name, price, id FROM products WHERE category = 'category 2' AND city = {city};")
-            rows = cur.fetchall()
-            for row in rows:
-                markup_inline.keyboard.clear()
-                img = open('data/' + ''.join(row[0]) + '.png', 'rb')
-                item_buy1 = types.InlineKeyboardButton(text='1', callback_data=f'id_{row[2]}_1')
-                item_buy3 = types.InlineKeyboardButton(text='3', callback_data=f'id_{row[2]}_3')
-                item_buy5 = types.InlineKeyboardButton(text='5', callback_data=f'id_{row[2]}_5')
-                item_buy10 = types.InlineKeyboardButton(text='10', callback_data=f'id_{row[2]}_10')
-                markup_inline.row(item_buy1, item_buy3, item_buy5, item_buy10)
-                bot.send_photo(callback_query.from_user.id, img,
-                               f'{row[0]}\nЦена за одну штуку: {row[1]} RUB ≈ {round(b.convert_to_btc((row[1]), "RUB"), 7)} ₿\n'
-                               f'Выберите сколько товара Вы хотите купить',
-                               reply_markup=markup_inline)
+        cur.execute(f"SELECT name, price, id FROM products WHERE category = '{category}' AND city = {city};")
+        rows = cur.fetchall()
+        for row in rows:
+            markup_inline.keyboard.clear()
+            img = open('data/' + ''.join(row[0]) + '.png', 'rb')
+            item_buy1 = types.InlineKeyboardButton(text='1', callback_data=f'id_{row[2]}' + '_1')
+            item_buy3 = types.InlineKeyboardButton(text='3', callback_data=f'id_{row[2]}' + '_3')
+            item_buy5 = types.InlineKeyboardButton(text='5', callback_data=f'id_{row[2]}' + '_5')
+            item_buy10 = types.InlineKeyboardButton(text='10', callback_data=f'id_{row[2]}' + '_10')
+            markup_inline.row(item_buy1, item_buy3, item_buy5, item_buy10)
+            bot.send_photo(callback_query.from_user.id, img,
+                           f'{row[0]}\nЦена за одну штуку: {row[1]} RUB ≈ {round(b.convert_to_btc((row[1]), "RUB"), 7)} ₿\n'
+                           f'Выберите сколько товара Вы хотите купить',
+                           reply_markup=markup_inline)
     if callback_query.data.split('_')[0] == 'id':
         amount = callback_query.data.split('_')[1]
         id = callback_query.data.split('_')[0]
