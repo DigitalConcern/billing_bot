@@ -76,6 +76,7 @@ def callback_inline_category(callback_query: types.CallbackQuery):
                            f'{row[0]}\nЦена за одну штуку: {row[1]} RUB ≈ {round(b.convert_to_btc((row[1]), "RUB"), 7)} ₿\n'
                            f'Выберите сколько товара Вы хотите купить',
                            reply_markup=markup_inline)
+        callback_query.data = ''
     if callback_query.data.split('_')[0] == 'id':
         amount = callback_query.data.split('_')[2]
         id = callback_query.data.split('_')[1]
@@ -92,6 +93,7 @@ def callback_inline_category(callback_query: types.CallbackQuery):
         img = qrcode.make(addr)
         img.save('qr.png')
         bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+        callback_query.data = ''
 
 
 @server.route(f'/{TOKEN}', methods=['POST'])
