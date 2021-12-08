@@ -55,7 +55,7 @@ def handle_city(message: types.Message):
 
 
 # Получение сообщений от юзера
-@bot.callback_query_handler(lambda c: c.data.startswith('city'))
+@bot.callback_query_handler(lambda c: True)
 def callback_inline_category(callback_query: types.CallbackQuery):
     if callback_query.data.startswith('city'):
         city = callback_query.data.split('_')[2]
