@@ -91,30 +91,29 @@ def callback_inline_category(callback_query: types.CallbackQuery):
               "Вам нужно в течение 15 минут перевести по адресу ниже необходимую" \
               " сумму ≈" + f'<b>{value} ₿</b>' + \
               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n"
-        buf1 = bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
-        last_msgs.append(buf1.message_id)
-        buf2 = bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML")
-        last_msgs.append(buf2.message_id)
+        bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+        bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML")
         img = qrcode.make(addr)
         img.save('qr.png')
-        buf3 = bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
-        last_msgs.append(buf3.message_id)
+        bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
         callback_query.data = ''
 
-        markup_inline = types.InlineKeyboardMarkup()
-        item_yes = types.InlineKeyboardButton(text='Да', callback_data='ans_yes')
-        item_no = types.InlineKeyboardButton(text='Нет', callback_data='ans_no')
-        markup_inline.row(item_yes, item_no)
-        bot.send_message(callback_query.from_user.id, 'Подтвердить покупку?', reply_markup=markup_inline, parse_mode="HTML")
+        cur.execute(f'INSERT INTO users(id, last_trans) VALUES ({callback_query.from_user.id}, false);')
+        connection.commit()
 
-    if callback_query.data.split('_')[0] == 'ans':
-        if callback_query.data.split('_')[1] == 'yes':
-            cur.execute(f'INSERT INTO users(id, last_trans) VALUES ({callback_query.from_user.id}, false);')
-            connection.commit()
-        if callback_query.data.split('_')[1] == 'no':
-            bot.send_message(callback_query.from_user.id, str(len(last_msgs)))
-            for msg in last_msgs:
-                bot.delete_message(callback_query.from_user.id, msg)
+    #     markup_inline = types.InlineKeyboardMarkup()
+    #     item_yes = types.InlineKeyboardButton(text='Да', callback_data='ans_yes')
+    #     item_no = types.InlineKeyboardButton(text='Нет', callback_data='ans_no')
+    #     markup_inline.row(item_yes, item_no)
+    #     bot.send_message(callback_query.from_user.id, 'Подтвердить покупку?', reply_markup=markup_inline, parse_mode="HTML")
+    #
+    # if callback_query.data.split('_')[0] == 'ans':
+    #     if callback_query.data.split('_')[1] == 'yes':
+
+    #     if callback_query.data.split('_')[1] == 'no':
+    #         bot.send_message(callback_query.from_user.id, str(len(last_msgs)))
+    #         for msg in last_msgs:
+    #             bot.delete_message(callback_query.from_user.id, msg)
 
 
 @server.route(f'/{TOKEN}', methods=['POST'])
