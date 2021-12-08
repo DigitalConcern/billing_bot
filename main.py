@@ -1,4 +1,6 @@
 import telebot
+import asyncio
+import requests
 from telebot import types
 from config import *
 from forex_python.bitcoin import BtcConverter
@@ -10,7 +12,7 @@ import psycopg2 as pg
 import qrcode
 
 client = Client(API_KEY, SECRET_API_KEY, api_version='2021-12-01')
-primary_account = client.get_primary_account()
+account = client.get_account('BTC')
 
 connection = pg.connect(DB_URI, sslmode='require')
 cur = connection.cursor()
@@ -58,7 +60,6 @@ def handle_city(message: types.Message):
 # Получение сообщений от юзера
 @bot.callback_query_handler(lambda c: c.data)
 def callback_inline_category(callback_query: types.CallbackQuery):
-
     if callback_query.data.split('_')[0] == 'city':
         city = callback_query.data.split('_')[2]
         category = callback_query.data.split('_')[1]
@@ -82,7 +83,7 @@ def callback_inline_category(callback_query: types.CallbackQuery):
     if callback_query.data.split('_')[0] == 'id':
         amount = callback_query.data.split('_')[2]
         id = callback_query.data.split('_')[1]
-        addr = primary_account.create_address()['address']
+        addr = account.create_address()['address']
         cur.execute(f"SELECT price, name, city FROM products WHERE id = {id};")
         row = cur.fetchone()
         value = round(b.convert_to_btc(row[0], "RUB"), 7) * int(amount)
@@ -96,8 +97,10 @@ def callback_inline_category(callback_query: types.CallbackQuery):
         img.save('qr.png')
         bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
 
-        cur.execute(f'INSERT INTO users(id, last_trans) VALUES ({callback_query.from_user.id}, false);')
-        connection.commit()
+        ioloop = asyncio.get_event_loop()
+        task = ioloop.create_task(accept(addr, value, callback_query.from_user.id))
+        ioloop.run_until_complete(asyncio.wait(task))
+        ioloop.close()
 
         callback_query.data = ''
 
@@ -122,6 +125,17 @@ def redirect_message():
     update = telebot.types.Update.de_json(json_string)
     bot.process_new_updates([update])
     return '!', 200
+
+
+async def accept(address, sum, user):
+    ctr = 0
+    conf = {}
+    while ctr != 900 or conf["data"]["confirmed_balance"] != sum:
+        conf = requests.get(f"https://chain.so/api/v2/get_address_balance/BTC/{address}/500")
+        await asyncio.sleep(0.1)
+    if conf["data"]["confirmed_balance"] == sum:
+        cur.execute(f'INSERT INTO users(id, trans) VALUES ({user}, false);')
+        connection.commit()
 
 
 # Запускаем бота
