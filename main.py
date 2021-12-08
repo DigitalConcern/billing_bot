@@ -20,12 +20,14 @@ server = Flask(__name__)
 logger = telebot.logger
 logger.setLevel(logging.DEBUG)
 b = BtcConverter()
+user_id = 0
 
 
 # Команда start
 @bot.message_handler(commands=["start"])
 def start(m, res=False):
     # Добавляем две кнопки
+    user_id = m.chat.id
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     cur.execute('SELECT DISTINCT city FROM public.products;')
     rows = cur.fetchall()
@@ -107,9 +109,8 @@ def callback_inline_category(callback_query: types.CallbackQuery):
             cur.execute(f'INSERT INTO users(id, last_trans) VALUES ({callback_query.from_user.id}, false);')
             connection.commit()
         if callback_query.data.split('_')[1] == 'no':
-            bot.send_message(callback_query.from_user.id, last_msgs)
             for msg in last_msgs:
-                bot.delete_message(callback_query.from_user.id, msg)
+                bot.delete_message(user_id, msg)
 
 
 @server.route(f'/{TOKEN}', methods=['POST'])
