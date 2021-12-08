@@ -56,6 +56,8 @@ def handle_city(message: types.Message):
 # Получение сообщений от юзера
 @bot.callback_query_handler(lambda c: c.data)
 def callback_inline_category(callback_query: types.CallbackQuery):
+    last_msgs = []
+
     if callback_query.data.split('_')[0] == 'city':
         city = callback_query.data.split('_')[2]
         category = callback_query.data.split('_')[1]
@@ -75,6 +77,7 @@ def callback_inline_category(callback_query: types.CallbackQuery):
                            f'Выберите сколько товара Вы хотите купить',
                            reply_markup=markup_inline)
         callback_query.data = ''
+
     if callback_query.data.split('_')[0] == 'id':
         amount = callback_query.data.split('_')[2]
         id = callback_query.data.split('_')[1]
@@ -86,12 +89,26 @@ def callback_inline_category(callback_query: types.CallbackQuery):
               "Вам нужно в течение 15 минут перевести по адресу ниже необходимую" \
               " сумму ≈" + f'<b>{value} ₿</b>' + \
               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n"
-        bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
-        bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML")
+        last_msgs.append(bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML").message_id)
+        last_msgs.append(bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML").message_id)
         img = qrcode.make(addr)
         img.save('qr.png')
-        bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+        last_msgs.append(bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb')).message_id)
         callback_query.data = ''
+
+        markup_inline = types.InlineKeyboardMarkup()
+        item_yes = types.InlineKeyboardButton(text='Да', callback_data='ans_yes')
+        item_no = types.InlineKeyboardButton(text='Нет', callback_data='ans_no')
+        markup_inline.row(item_yes, item_no)
+        bot.send_message(callback_query.from_user.id, 'Подтвердить покупку?', parse_mode="HTML")
+
+    if callback_query.data.split('_')[0] == 'ans':
+        if callback_query.data.split('_')[1] == 'yes':
+            cur.execute(f'INSERT INTO users(id, last_trans) VALUES ({callback_query.from_user.id}, false);')
+            connection.commit()
+        if callback_query.data.split('_')[1] == 'no':
+            for msg in last_msgs:
+                bot.delete_message(callback_query.from_user.id, msg)
 
 
 @server.route(f'/{TOKEN}', methods=['POST'])
