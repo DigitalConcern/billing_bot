@@ -91,11 +91,14 @@ def callback_inline_category(callback_query: types.CallbackQuery):
               "Вам нужно в течение 15 минут перевести по адресу ниже необходимую" \
               " сумму ≈" + f'<b>{value} ₿</b>' + \
               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n"
-        last_msgs.append(bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML").id)
-        last_msgs.append(bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML").id)
+        buf1 = bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+        last_msgs.append(buf1.message_id)
+        buf2 = bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML")
+        last_msgs.append(buf2.message_id)
         img = qrcode.make(addr)
         img.save('qr.png')
-        last_msgs.append(bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb')).id)
+        buf3 = bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+        last_msgs.append(buf3.message_id)
         callback_query.data = ''
 
         markup_inline = types.InlineKeyboardMarkup()
