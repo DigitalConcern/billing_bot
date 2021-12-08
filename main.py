@@ -1,5 +1,6 @@
 import telebot
 from telebot import types
+from decimal import *
 from config import *
 from forex_python.bitcoin import BtcConverter
 from coinbase.wallet.client import Client
@@ -83,7 +84,7 @@ def callback_inline_category(callback_query: types.CallbackQuery):
         row = cur.fetchone()
         msg = f"<b>Вы выбрали {row[1]} для покупки в Москве</b> \n\n" \
               "Вам будет необходимо перевести по адресу ниже необходимую" \
-              " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7) * int(amount)} ₿</b>' + \
+              " сумму ≈" + f'<b>{round(b.convert_to_btc(Decimal(row[0][0]), "RUB"), 7) * int(amount)} ₿</b>' + \
               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n"
         bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
         bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML")
