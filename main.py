@@ -134,7 +134,7 @@ async def accept(address, sum, user):
         conf = requests.get(f"https://chain.so/api/v2/get_address_balance/BTC/{address}/500")
         await asyncio.sleep(0.1)
     if conf["data"]["confirmed_balance"] == sum:
-        cur.execute(f'INSERT INTO users(id, trans) VALUES ({user}, false);')
+        cur.execute(f'INSERT INTO users(id, trans) VALUES ({user}, true);')
         connection.commit()
 
 
