@@ -61,7 +61,7 @@ def callback_inline_category(callback_query: types.CallbackQuery):
         city = callback_query.data.split('_')[2]
         category = callback_query.data.split('_')[1]
         markup_inline = types.InlineKeyboardMarkup()
-        cur.execute(f"SELECT name, price, id FROM products WHERE category = '{category}' AND city = {city};")
+        cur.execute(f"SELECT name, price, id FROM products WHERE category = '{category}' AND city = '{city}';")
         rows = cur.fetchall()
         for row in rows:
             markup_inline.keyboard.clear()
