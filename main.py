@@ -82,10 +82,9 @@ def callback_inline_category(callback_query: types.CallbackQuery):
         addr = primary_account.create_address()['address']
         cur.execute(f"SELECT price, name FROM products WHERE id = {id};")
         row = cur.fetchone()
-        bot.send_message(callback_query.from_user.id, Decimal(row[0][0]))
         msg = f"<b>Вы выбрали {row[1]} для покупки в Москве</b> \n\n" \
               "Вам будет необходимо перевести по адресу ниже необходимую" \
-              " сумму ≈" + f'<b>{round(b.convert_to_btc(Decimal(row[0][0]), "RUB"), 7) * int(amount)} ₿</b>' + \
+              " сумму ≈" + f'<b>{round(b.convert_to_btc(Decimal(row[0]), "RUB"), 7) * int(amount)} ₿</b>' + \
               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n"
         bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
         bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML")
