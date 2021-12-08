@@ -100,7 +100,7 @@ def callback_inline_category(callback_query: types.CallbackQuery):
         item_yes = types.InlineKeyboardButton(text='Да', callback_data='ans_yes')
         item_no = types.InlineKeyboardButton(text='Нет', callback_data='ans_no')
         markup_inline.row(item_yes, item_no)
-        bot.send_message(callback_query.from_user.id, 'Подтвердить покупку?', parse_mode="HTML")
+        bot.send_message(callback_query.from_user.id, 'Подтвердить покупку?', reply_markup=markup_inline, parse_mode="HTML")
 
     if callback_query.data.split('_')[0] == 'ans':
         if callback_query.data.split('_')[1] == 'yes':
