@@ -1,11 +1,9 @@
 import telebot
 from telebot import types
-from decimal import *
 from config import *
 from forex_python.bitcoin import BtcConverter
 from coinbase.wallet.client import Client
 from flask import Flask, request
-import aiogram
 import os
 import logging
 import psycopg2 as pg
