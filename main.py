@@ -80,6 +80,7 @@ def callback_inline_category(callback_query: types.CallbackQuery):
         id = callback_query.data.split('_')[1]
         addr = primary_account.create_address()['address']
         row = cur.execute(f"SELECT price, name FROM public.products WHERE id = {id};")
+        row = cur.fetchone()
         msg = f"<b>Вы выбрали {row[1]} для покупки в Москве</b> \n\n" \
               "Вам будет необходимо перевести по адресу ниже необходимую" \
               " сумму ≈" + f'<b>{round(b.convert_to_btc(row[0][0], "RUB"), 7) * amount} ₿</b>' + \
