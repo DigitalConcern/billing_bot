@@ -76,8 +76,8 @@ def callback_inline_category(callback_query: types.CallbackQuery):
                            f'Выберите сколько товара Вы хотите купить',
                            reply_markup=markup_inline)
     if callback_query.data.split('_')[0] == 'id':
-        amount = callback_query.data.split('_')[1]
-        id = callback_query.data.split('_')[0]
+        amount = callback_query.data.split('_')[2]
+        id = callback_query.data.split('_')[1]
         addr = primary_account.create_address()['address']
         row = cur.execute(f"SELECT price, name FROM public.products WHERE id = {id};")
         msg = f"<b>Вы выбрали {row[1]} для покупки в Москве</b> \n\n" \
