@@ -115,13 +115,13 @@ async def accept(address, sum, user):
         ctr += 1
     if float(ans['data']['confirmed_balance']) == sum:
         cur.execute(f"INSERT INTO users(id, trans, date) VALUES ({user}, true,"
-                    f" '{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}') WHERE id={user};")
+                    f" '{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}');")
         connection.commit()
         await bot.send_message(user, "Покупка подтверждена!")
         return
     else:
         cur.execute(f"INSERT INTO users(id, trans, date) VALUES ({user}, false,"
-                    f" '{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}') WHERE id={user};")
+                    f" '{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}');")
         connection.commit()
         await bot.send_message(user, "Покупка не подтверждена!\nПопробуйте оформить заказ заново!")
         return
