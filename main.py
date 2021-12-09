@@ -32,7 +32,7 @@ user_id = 0
 async def start(m, res=False):
     # Добавляем две кнопки
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    cur.execute('SELECT DISTINCT city FROM public.products;')
+    cur.execute('SELECT DISTINCT city FROM products;')
     rows = cur.fetchall()
     for row in rows:
         item = types.KeyboardButton(''.join(row[0]))
@@ -49,13 +49,14 @@ async def handle_city(message: types.Message):
     rows = cur.fetchall()
     if not rows:
         await bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔 \n"
-                                          "Выбери из предложенных в меню!")
+                                                "Выбери из предложенных в меню!")
     else:
         for row in rows:
             item = types.InlineKeyboardButton(text=''.join(row[0]),
                                               callback_data=f'city_{"".join(row[0])}_{message.text.strip()}')
             markup_inline.add(item)
-        await bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!", reply_markup=markup_inline)
+        await bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!",
+                               reply_markup=markup_inline)
 
 
 # Получение сообщений от юзера
@@ -140,18 +141,14 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
 
 
 # Run after startup
-async def on_startup(dispatcher: Dispatcher):
+async def on_startup(dp):
     await bot.delete_webhook()
     await bot.set_webhook(WEBHOOK_URL)
 
 
 # Run before shutdown
-async def on_shutdown(dispatcher: Dispatcher):
-    logging.warning("Shutting down..")
-    await bot.delete_webhook()
-    await dispatcher.storage.close()
-    await dispatcher.storage.wait_closed()
-    logging.warning("Bot down")
+async def on_shutdown(dp):
+    logging.warning('Bye! Shutting down webhook connection')
 
 
 # Запускаем бота
@@ -160,7 +157,6 @@ if __name__ == '__main__':
         dispatcher=dp,
         webhook_path=WEBHOOK_PATH,
         on_startup=on_startup,
-        on_shutdown=on_shutdown,
         skip_updates=True,
         host=WEBAPP_HOST,
         port=int(os.environ.get("PORT", 5000)))
