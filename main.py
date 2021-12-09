@@ -132,7 +132,7 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
 async def accept(address, sum, user):
     ctr = 0
     ans = []
-    while ctr != 16 or float(ans['data']['confirmed_balance']) != sum:
+    while ctr != 16 and float(ans['data']['confirmed_balance']) != sum:
         conf = requests.get(f"https://chain.so/api/v2/get_address_balance/BTC/{address}/500")
         ans = conf.json()
         time.sleep(1)
