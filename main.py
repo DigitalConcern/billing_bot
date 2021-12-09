@@ -23,10 +23,8 @@ logging.basicConfig(level=logging.DEBUG)
 b = BtcConverter()
 
 
-# Команда start
 @dp.message_handler(commands=["start"])
 async def start(m, res=False):
-    # Добавляем две кнопки
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     cur.execute('SELECT DISTINCT city FROM products;')
     rows = cur.fetchall()
@@ -77,6 +75,11 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
         callback_query.data = ''
 
     if callback_query.data.split('_')[0] == 'id':
+        user_id = callback_query.from_user.id
+
+        cur.execute(f'INSERT INTO users(id, trans) VALUES ({user_id}, false);')
+        connection.commit()
+
         amount = callback_query.data.split('_')[2]
         id = callback_query.data.split('_')[1]
         addr = account.create_address()['address']
@@ -87,16 +90,12 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
               "Вам нужно в течение 15 минут перевести по адресу ниже необходимую" \
               " сумму ≈" + f'<b>{value} ₿</b>' + \
               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n"
-        await bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
-        await bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML")
+        await bot.send_message(user_id, msg, parse_mode="HTML")
+        await bot.send_message(user_id, f'<code>{addr}</code>', parse_mode="HTML")
         img = qrcode.make(addr)
         img.save('qr.png')
         await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
-        user_id = callback_query.from_user.id
         callback_query.data = ''
-
-        cur.execute(f'INSERT INTO users(id, trans) VALUES ({user_id}, false);')
-        connection.commit()
 
         asyncio.create_task(accept(addr, value, user_id))
         callback_query.data = ''
