@@ -40,69 +40,69 @@ async def start(m, res=False):
     await bot.send_message(m.chat.id, "Выбери город, в котором планируешь сделать заказ!")
 
 
-@dp.message_handler(content_types=["text"])
-async def handle_city(message: types.Message):
-    markup_inline = types.InlineKeyboardMarkup()
-    cur.execute(f"SELECT DISTINCT category FROM products WHERE city = '{message.text.strip()}';")
-    rows = cur.fetchall()
-    if not rows:
-        await bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔 \n"
-                                                "Выбери из предложенных в меню!")
-    else:
-        for row in rows:
-            item = types.InlineKeyboardButton(text=''.join(row[0]),
-                                              callback_data=f'city_{"".join(row[0])}_{message.text.strip()}')
-            markup_inline.add(item)
-        await bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!",
-                               reply_markup=markup_inline)
+# @dp.message_handler(content_types=["text"])
+# async def handle_city(message: types.Message):
+#     markup_inline = types.InlineKeyboardMarkup()
+#     cur.execute(f"SELECT DISTINCT category FROM products WHERE city = '{message.text.strip()}';")
+#     rows = cur.fetchall()
+#     if not rows:
+#         await bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔 \n"
+#                                                 "Выбери из предложенных в меню!")
+#     else:
+#         for row in rows:
+#             item = types.InlineKeyboardButton(text=''.join(row[0]),
+#                                               callback_data=f'city_{"".join(row[0])}_{message.text.strip()}')
+#             markup_inline.add(item)
+#         await bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!",
+#                                reply_markup=markup_inline)
 
 
-# Получение сообщений от юзера
-@dp.callback_query_handler(lambda c: c.data)
-async def callback_inline_category(callback_query: types.CallbackQuery):
-    if callback_query.data.split('_')[0] == 'city':
-        city = callback_query.data.split('_')[2]
-        category = callback_query.data.split('_')[1]
-        markup_inline = types.InlineKeyboardMarkup()
-        cur.execute(f"SELECT name, price, id FROM products WHERE category = '{category}' AND city = '{city}';")
-        rows = cur.fetchall()
-        for row in rows:
-            markup_inline.keyboard.clear()
-            img = open('data/' + ''.join(row[0]) + '.png', 'rb')
-            item_buy1 = types.InlineKeyboardButton(text='1', callback_data=f'id_{row[2]}' + '_1')
-            item_buy3 = types.InlineKeyboardButton(text='3', callback_data=f'id_{row[2]}' + '_3')
-            item_buy5 = types.InlineKeyboardButton(text='5', callback_data=f'id_{row[2]}' + '_5')
-            item_buy10 = types.InlineKeyboardButton(text='10', callback_data=f'id_{row[2]}' + '_10')
-            markup_inline.row(item_buy1, item_buy3, item_buy5, item_buy10)
-            await bot.send_photo(callback_query.from_user.id, img,
-                                 f'{row[0]}\nЦена за одну штуку: {row[1]} RUB ≈ {round(b.convert_to_btc((row[1]), "RUB"), 7)} ₿\n'
-                                 f'Выберите сколько товара Вы хотите купить',
-                                 reply_markup=markup_inline)
-        callback_query.data = ''
-
-    if callback_query.data.split('_')[0] == 'id':
-        amount = callback_query.data.split('_')[2]
-        id = callback_query.data.split('_')[1]
-        addr = account.create_address()['address']
-        cur.execute(f"SELECT price, name, city FROM products WHERE id = {id};")
-        row = cur.fetchone()
-        value = round(b.convert_to_btc(row[0], "RUB"), 7) * int(amount)
-        msg = f"<b>Вы выбрали {row[1]} в количестве {amount} штук(а) для покупки в {row[2]}</b> \n\n" \
-              "Вам нужно в течение 15 минут перевести по адресу ниже необходимую" \
-              " сумму ≈" + f'<b>{value} ₿</b>' + \
-              " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n"
-        await bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
-        await bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML")
-        img = qrcode.make(addr)
-        img.save('qr.png')
-        await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
-
-        # ioloop = asyncio.get_event_loop()
-        # task = ioloop.create_task(accept(addr, value, callback_query.from_user.id))
-        # ioloop.run_until_complete(asyncio.wait(task))
-        # ioloop.close()
-
-        callback_query.data = ''
+# # Получение сообщений от юзера
+# @dp.callback_query_handler(lambda c: c.data)
+# async def callback_inline_category(callback_query: types.CallbackQuery):
+#     if callback_query.data.split('_')[0] == 'city':
+#         city = callback_query.data.split('_')[2]
+#         category = callback_query.data.split('_')[1]
+#         markup_inline = types.InlineKeyboardMarkup()
+#         cur.execute(f"SELECT name, price, id FROM products WHERE category = '{category}' AND city = '{city}';")
+#         rows = cur.fetchall()
+#         for row in rows:
+#             markup_inline.keyboard.clear()
+#             img = open('data/' + ''.join(row[0]) + '.png', 'rb')
+#             item_buy1 = types.InlineKeyboardButton(text='1', callback_data=f'id_{row[2]}' + '_1')
+#             item_buy3 = types.InlineKeyboardButton(text='3', callback_data=f'id_{row[2]}' + '_3')
+#             item_buy5 = types.InlineKeyboardButton(text='5', callback_data=f'id_{row[2]}' + '_5')
+#             item_buy10 = types.InlineKeyboardButton(text='10', callback_data=f'id_{row[2]}' + '_10')
+#             markup_inline.row(item_buy1, item_buy3, item_buy5, item_buy10)
+#             await bot.send_photo(callback_query.from_user.id, img,
+#                                  f'{row[0]}\nЦена за одну штуку: {row[1]} RUB ≈ {round(b.convert_to_btc((row[1]), "RUB"), 7)} ₿\n'
+#                                  f'Выберите сколько товара Вы хотите купить',
+#                                  reply_markup=markup_inline)
+#         callback_query.data = ''
+#
+#     if callback_query.data.split('_')[0] == 'id':
+#         amount = callback_query.data.split('_')[2]
+#         id = callback_query.data.split('_')[1]
+#         addr = account.create_address()['address']
+#         cur.execute(f"SELECT price, name, city FROM products WHERE id = {id};")
+#         row = cur.fetchone()
+#         value = round(b.convert_to_btc(row[0], "RUB"), 7) * int(amount)
+#         msg = f"<b>Вы выбрали {row[1]} в количестве {amount} штук(а) для покупки в {row[2]}</b> \n\n" \
+#               "Вам нужно в течение 15 минут перевести по адресу ниже необходимую" \
+#               " сумму ≈" + f'<b>{value} ₿</b>' + \
+#               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n"
+#         await bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+#         await bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML")
+#         img = qrcode.make(addr)
+#         img.save('qr.png')
+#         await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+#
+#         # ioloop = asyncio.get_event_loop()
+#         # task = ioloop.create_task(accept(addr, value, callback_query.from_user.id))
+#         # ioloop.run_until_complete(asyncio.wait(task))
+#         # ioloop.close()
+#
+#         callback_query.data = ''
 
     #     markup_inline = types.InlineKeyboardMarkup()
     #     item_yes = types.InlineKeyboardButton(text='Да', callback_data='ans_yes')
