@@ -3,6 +3,7 @@ from config import *
 from forex_python.bitcoin import BtcConverter
 from coinbase.wallet.client import Client
 import os
+import datetime
 import asyncio
 import logging
 import requests
@@ -102,34 +103,6 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
         asyncio.create_task(accept(addr, value, user_id))
 
 
-        # ioloop = asyncio.get_event_loop()
-        # task = ioloop.create_task(accept(addr, value, callback_query.from_user.id))
-        # ioloop.run_until_complete(asyncio.wait(task))
-        # ioloop.close()
-
-    #     markup_inline = types.InlineKeyboardMarkup()
-    #     item_yes = types.InlineKeyboardButton(text='Да', callback_data='ans_yes')
-    #     item_no = types.InlineKeyboardButton(text='Нет', callback_data='ans_no')
-    #     markup_inline.row(item_yes, item_no)
-    #     bot.send_message(callback_query.from_user.id, 'Подтвердить покупку?', reply_markup=markup_inline, parse_mode="HTML")
-    #
-    # if callback_query.data.split('_')[0] == 'ans':
-    #     if callback_query.data.split('_')[1] == 'yes':
-    #
-    #     if callback_query.data.split('_')[1] == 'no':
-    #         bot.send_message(callback_query.from_user.id, str(len(last_msgs)))
-    #         for msg in last_msgs:
-    #             bot.delete_message(callback_query.from_user.id, msg)
-
-
-# @server.route(f'/{TOKEN}', methods=['POST'])
-# def redirect_message():
-#     json_string = request.get_data().decode('utf-8')
-#     update = telebot.types.Update.de_json(json_string)
-#     bot.process_new_updates([update])
-#     return '!', 200
-
-
 async def accept(address, sum, user):
     ctr = 0
     conf = requests.get(f"https://chain.so/api/v2/get_address_balance/BTC/{address}/500")
@@ -140,11 +113,13 @@ async def accept(address, sum, user):
         await asyncio.sleep(1)
         ctr += 1
     if float(ans['data']['confirmed_balance']) == sum:
-        cur.execute(f"INSERT INTO users(id, trans) VALUES ({user}, true) WHERE id={user};")
+        cur.execute(f"INSERT INTO users(id, trans, date) VALUES ({user}, true, {datetime.datetime.now()}) WHERE id={user};")
         connection.commit()
         await bot.send_message(user, "Покупка подтверждена!")
         return
     else:
+        cur.execute(f"INSERT INTO users(id, trans, date) VALUES ({user}, false, {datetime.datetime.now()}) WHERE id={user};")
+        connection.commit()
         await bot.send_message(user, "Покупка не подтверждена!\nПопробуйте оформить заказ заново!")
         return
 
