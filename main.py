@@ -1,6 +1,7 @@
 import telebot
 import asyncio
 import requests
+from aiogram import Bot, Dispatcher, types, executor
 from telebot import types
 from config import *
 from forex_python.bitcoin import BtcConverter
@@ -17,31 +18,31 @@ account = client.get_account('BTC')
 connection = pg.connect(DB_URI, sslmode='require')
 cur = connection.cursor()
 
-bot = telebot.TeleBot(TOKEN)
-server = Flask(__name__)
-logger = telebot.logger
-logger.setLevel(logging.DEBUG)
+bot = Bot(TOKEN)
+dp = Dispatcher(bot)
+
+logging.basicConfig(level=logging.DEBUG)
+
 b = BtcConverter()
 user_id = 0
 
 
 # Команда start
-@bot.message_handler(commands=["start"])
+@dp.message_handler(commands=["start"])
 def start(m, res=False):
     # Добавляем две кнопки
-    user_id = m.chat.id
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    cur.execute('SELECT DISTINCT city FROM public.products;')
+    await cur.execute('SELECT DISTINCT city FROM public.products;')
     rows = cur.fetchall()
     for row in rows:
         item = types.KeyboardButton(''.join(row[0]))
         markup.add(item)
     # cur.execute(f'INSERT INTO users(id, last_trans) VALUES ({m.chat.id}, false);')
     # connection.commit()
-    bot.send_message(m.chat.id, "Выбери город, в котором планируешь сделать заказ!", reply_markup=markup)
+    await bot.send_message(m.chat.id, "Выбери город, в котором планируешь сделать заказ!", reply_markup=markup)
 
 
-@bot.message_handler(content_types=["text"])
+@dp.message_handler(content_types=["text"])
 def handle_city(message: types.Message):
     markup_inline = types.InlineKeyboardMarkup()
     cur.execute(f"SELECT DISTINCT category FROM products WHERE city = '{message.text.strip()}';")
@@ -58,13 +59,13 @@ def handle_city(message: types.Message):
 
 
 # Получение сообщений от юзера
-@bot.callback_query_handler(lambda c: c.data)
-def callback_inline_category(callback_query: types.CallbackQuery):
+@dp.callback_query_handler(lambda c: c.data)
+async def callback_inline_category(callback_query: types.CallbackQuery):
     if callback_query.data.split('_')[0] == 'city':
         city = callback_query.data.split('_')[2]
         category = callback_query.data.split('_')[1]
         markup_inline = types.InlineKeyboardMarkup()
-        cur.execute(f"SELECT name, price, id FROM products WHERE category = '{category}' AND city = '{city}';")
+        await cur.execute(f"SELECT name, price, id FROM products WHERE category = '{category}' AND city = '{city}';")
         rows = cur.fetchall()
         for row in rows:
             markup_inline.keyboard.clear()
@@ -74,10 +75,10 @@ def callback_inline_category(callback_query: types.CallbackQuery):
             item_buy5 = types.InlineKeyboardButton(text='5', callback_data=f'id_{row[2]}' + '_5')
             item_buy10 = types.InlineKeyboardButton(text='10', callback_data=f'id_{row[2]}' + '_10')
             markup_inline.row(item_buy1, item_buy3, item_buy5, item_buy10)
-            bot.send_photo(callback_query.from_user.id, img,
-                           f'{row[0]}\nЦена за одну штуку: {row[1]} RUB ≈ {round(b.convert_to_btc((row[1]), "RUB"), 7)} ₿\n'
-                           f'Выберите сколько товара Вы хотите купить',
-                           reply_markup=markup_inline)
+            await bot.send_photo(callback_query.from_user.id, img,
+                                 f'{row[0]}\nЦена за одну штуку: {row[1]} RUB ≈ {round(b.convert_to_btc((row[1]), "RUB"), 7)} ₿\n'
+                                 f'Выберите сколько товара Вы хотите купить',
+                                 reply_markup=markup_inline)
         callback_query.data = ''
 
     if callback_query.data.split('_')[0] == 'id':
@@ -91,16 +92,16 @@ def callback_inline_category(callback_query: types.CallbackQuery):
               "Вам нужно в течение 15 минут перевести по адресу ниже необходимую" \
               " сумму ≈" + f'<b>{value} ₿</b>' + \
               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n"
-        bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
-        bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML")
+        await bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+        await bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML")
         img = qrcode.make(addr)
         img.save('qr.png')
-        bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+        await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
 
-        ioloop = asyncio.get_event_loop()
-        task = ioloop.create_task(accept(addr, value, callback_query.from_user.id))
-        ioloop.run_until_complete(asyncio.wait(task))
-        ioloop.close()
+        # ioloop = asyncio.get_event_loop()
+        # task = ioloop.create_task(accept(addr, value, callback_query.from_user.id))
+        # ioloop.run_until_complete(asyncio.wait(task))
+        # ioloop.close()
 
         callback_query.data = ''
 
@@ -119,12 +120,12 @@ def callback_inline_category(callback_query: types.CallbackQuery):
     #             bot.delete_message(callback_query.from_user.id, msg)
 
 
-@server.route(f'/{TOKEN}', methods=['POST'])
-def redirect_message():
-    json_string = request.get_data().decode('utf-8')
-    update = telebot.types.Update.de_json(json_string)
-    bot.process_new_updates([update])
-    return '!', 200
+# @server.route(f'/{TOKEN}', methods=['POST'])
+# def redirect_message():
+#     json_string = request.get_data().decode('utf-8')
+#     update = telebot.types.Update.de_json(json_string)
+#     bot.process_new_updates([update])
+#     return '!', 200
 
 
 async def accept(address, sum, user):
@@ -138,8 +139,34 @@ async def accept(address, sum, user):
         connection.commit()
 
 
+# Run after startup
+async def on_startup(dispatcher: Dispatcher):
+    await bot.delete_webhook()
+    await bot.set_webhook(WEBHOOK_URL)
+
+
+# Run before shutdown
+async def on_shutdown(dispatcher: Dispatcher):
+    logging.warning("Shutting down..")
+    await bot.delete_webhook()
+    await dispatcher.storage.close()
+    await dispatcher.storage.wait_closed()
+    logging.warning("Bot down")
+
+
 # Запускаем бота
 if __name__ == '__main__':
-    bot.remove_webhook()
-    bot.set_webhook(url=APP_URL)
-    server.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
+    if "HEROKU" in list(os.environ.keys()):
+        executor.start_webhook(
+            dispatcher=dp,
+            webhook_path=WEBHOOK_PATH,
+            on_startup=on_startup,
+            on_shutdown=on_shutdown,
+            skip_updates=True,
+            host=WEBAPP_HOST,
+            port=int(os.environ.get("PORT", 5000)),
+        )
+
+    # bot.remove_webhook()
+    # bot.set_webhook(url=APP_URL)
+    # server.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
