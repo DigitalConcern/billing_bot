@@ -95,10 +95,11 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
         img = qrcode.make(addr)
         img.save('qr.png')
         await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+        await bot.send_message(user_id, '<b>После успешной покупки в течение 15 минут вам придет'
+                                        ' уведомление об успешной оплате</b>', parse_mode="HTML")
         callback_query.data = ''
 
         asyncio.create_task(accept(addr, value, user_id))
-        callback_query.data = ''
 
 
         # ioloop = asyncio.get_event_loop()
