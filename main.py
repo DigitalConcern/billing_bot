@@ -33,10 +33,10 @@ async def start(m, res=False):
     rows = cur.fetchall()
     for row in rows:
         item = types.KeyboardButton(''.join(row[0]))
-        markup.add(item)
+        markup.insert(item)
     # cur.execute(f'INSERT INTO users(id, last_trans) VALUES ({m.chat.id}, false);')
     # connection.commit()
-    await bot.send_message(m.chat.id, "Выбери город, в котором планируешь сделать заказ!", reply_markup=[markup])
+    await bot.send_message(m.chat.id, "Выбери город, в котором планируешь сделать заказ!", reply_markup=markup)
 
 
 # @dp.message_handler(content_types=["text"])
