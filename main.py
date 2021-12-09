@@ -34,6 +34,7 @@ async def start(m, res=False):
     for row in rows:
         item = types.KeyboardButton(''.join(row[0]))
         markup.add(item)
+        await bot.send_message(m.chat.id, ''.join(row[0]))
     # cur.execute(f'INSERT INTO users(id, last_trans) VALUES ({m.chat.id}, false);')
     # connection.commit()
     await bot.send_message(m.chat.id, "Выбери город, в котором планируешь сделать заказ!")
