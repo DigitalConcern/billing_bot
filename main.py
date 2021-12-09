@@ -99,7 +99,6 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
         connection.commit()
 
         await accept(addr, value, user_id)
-        callback_query.data = ''
 
 
         # ioloop = asyncio.get_event_loop()
@@ -136,14 +135,16 @@ async def accept(address, sum, user):
     while ctr != 16 or float(ans['data']['confirmed_balance']) != sum:
         conf = requests.get(f"https://chain.so/api/v2/get_address_balance/BTC/{address}/500")
         ans = conf.json()
-        time.sleep(2)
-        ctr += 2
+        time.sleep(1)
+        ctr += 1
     if float(ans['data']['confirmed_balance']) == sum:
         cur.execute(f'INSERT INTO users(id, trans) VALUES ({user}, true);')
         connection.commit()
         await bot.send_message(user, "Покупка подтверждена!")
+        return
     else:
         await bot.send_message(user, "Покупка не подтверждена!\nПопробуйте оформить заказ заново!")
+        return
 
 
 # Run after startup
