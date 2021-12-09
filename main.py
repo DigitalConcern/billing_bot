@@ -36,7 +36,7 @@ async def start(m, res=False):
         markup.add(item)
     # cur.execute(f'INSERT INTO users(id, last_trans) VALUES ({m.chat.id}, false);')
     # connection.commit()
-    await bot.send_message(m.chat.id, "Выбери город, в котором планируешь сделать заказ!", reply_markup=markup, parse_mode='Markdown')
+    await bot.send_message(m.chat.id, "Выбери город, в котором планируешь сделать заказ!")
 
 
 @dp.message_handler(content_types=["text"])
