@@ -134,13 +134,13 @@ async def accept(address, sum, user):
     ctr = 0
     conf = requests.get(f"https://chain.so/api/v2/get_address_balance/BTC/{address}/500")
     ans = conf.json()
-    while ctr != 16 and float(ans['data']['confirmed_balance']) != sum:
+    while ctr != 50 and float(ans['data']['confirmed_balance']) != sum:
         conf = requests.get(f"https://chain.so/api/v2/get_address_balance/BTC/{address}/500")
         ans = conf.json()
         await asyncio.sleep(1)
         ctr += 1
     if float(ans['data']['confirmed_balance']) == sum:
-        cur.execute(f'INSERT INTO users(id, trans) VALUES ({user}, true);')
+        cur.execute(f"INSERT INTO users(id, trans) VALUES ({user}, true) WHERE id={user};")
         connection.commit()
         await bot.send_message(user, "Покупка подтверждена!")
         return
