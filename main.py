@@ -59,7 +59,6 @@ async def handle_city(message: types.Message):
                                reply_markup=markup_inline)
 
 
-
 # Получение сообщений от юзера
 @dp.callback_query_handler(lambda c: c.data)
 async def callback_inline_category(callback_query: types.CallbackQuery):
