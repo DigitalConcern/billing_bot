@@ -98,7 +98,7 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
         cur.execute(f'INSERT INTO users(id, trans) VALUES ({user_id}, false);')
         connection.commit()
 
-        await accept(addr, value, user_id)
+        # await accept(addr, value, user_id)
 
 
         # ioloop = asyncio.get_event_loop()
