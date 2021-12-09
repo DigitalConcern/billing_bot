@@ -92,11 +92,11 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
         img = qrcode.make(addr)
         img.save('qr.png')
         await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
-
-        cur.execute(f'INSERT INTO users(id, trans) VALUES ({callback_query.from_user.id}, false);')
-        connection.commit()
         user_id = callback_query.from_user.id
         callback_query.data = ''
+
+        cur.execute(f'INSERT INTO users(id, trans) VALUES ({user_id}, false);')
+        connection.commit()
 
         await accept(addr, value, user_id)
 
@@ -131,9 +131,11 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
 
 async def accept(address, sum, user):
     ctr = 0
-    conf = {}
-    while ctr != 16 or conf["data"]["confirmed_balance"] != sum:
+    ans = []
+    while ctr != 16 or float(ans['data']['confirmed_balance']) != sum:
         conf = requests.get(f"https://chain.so/api/v2/get_address_balance/BTC/{address}/500")
+        ans = conf.json()
+        await bot.send_message(user, ans['data']['confirmed_balance'])
         time.sleep(2)
         ctr += 2
     if conf["data"]["confirmed_balance"] == sum:
