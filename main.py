@@ -78,7 +78,8 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
     if callback_query.data.split('_')[0] == 'id':
         user_id = callback_query.from_user.id
 
-        cur.execute(f'INSERT INTO users(id, trans, date) VALUES ({user_id}, false, {datetime.datetime.now()});')
+        cur.execute(f"INSERT INTO users(id, trans, date) VALUES ({user_id}, false,"
+                    f" {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')});")
         connection.commit()
 
         amount = callback_query.data.split('_')[2]
@@ -113,12 +114,14 @@ async def accept(address, sum, user):
         await asyncio.sleep(1)
         ctr += 1
     if float(ans['data']['confirmed_balance']) == sum:
-        cur.execute(f"INSERT INTO users(id, trans, date) VALUES ({user}, true, {datetime.datetime.now()}) WHERE id={user};")
+        cur.execute(f"INSERT INTO users(id, trans, date) VALUES ({user}, true,"
+                    f" {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}) WHERE id={user};")
         connection.commit()
         await bot.send_message(user, "Покупка подтверждена!")
         return
     else:
-        cur.execute(f"INSERT INTO users(id, trans, date) VALUES ({user}, false, {datetime.datetime.now()}) WHERE id={user};")
+        cur.execute(f"INSERT INTO users(id, trans, date) VALUES ({user}, false,"
+                    f" {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}) WHERE id={user};")
         connection.commit()
         await bot.send_message(user, "Покупка не подтверждена!\nПопробуйте оформить заказ заново!")
         return
