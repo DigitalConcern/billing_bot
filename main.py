@@ -3,7 +3,9 @@ from config import *
 from forex_python.bitcoin import BtcConverter
 from coinbase.wallet.client import Client
 import os
+import time
 import logging
+import requests
 import psycopg2 as pg
 import qrcode
 
@@ -91,6 +93,12 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
         img.save('qr.png')
         await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
 
+        cur.execute(f'INSERT INTO users(id, trans) VALUES ({callback_query.from_user.id}, true);')
+        connection.commit()
+
+        await accept(addr, value, callback_query.from_user.id)
+
+
         # ioloop = asyncio.get_event_loop()
         # task = ioloop.create_task(accept(addr, value, callback_query.from_user.id))
         # ioloop.run_until_complete(asyncio.wait(task))
@@ -121,15 +129,19 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
 #     return '!', 200
 
 
-# async def accept(address, sum, user):
-#     ctr = 0
-#     conf = {}
-#     while ctr != 900 or conf["data"]["confirmed_balance"] != sum:
-#         conf = requests.get(f"https://chain.so/api/v2/get_address_balance/BTC/{address}/500")
-#         await asyncio.sleep(0.1)
-#     if conf["data"]["confirmed_balance"] == sum:
-#         cur.execute(f'INSERT INTO users(id, trans) VALUES ({user}, true);')
-#         connection.commit()
+async def accept(address, sum, user):
+    ctr = 0
+    conf = {}
+    while ctr != 16 or conf["data"]["confirmed_balance"] != sum:
+        conf = requests.get(f"https://chain.so/api/v2/get_address_balance/BTC/{address}/500")
+        time.sleep(2)
+        ctr += 2
+    if conf["data"]["confirmed_balance"] == sum:
+        cur.execute(f'INSERT INTO users(id, trans) VALUES ({user}, true);')
+        connection.commit()
+        await bot.send_message(user, "Покупка подтверждена!")
+    else:
+        await bot.send_message(user, "Покупка не подтверждена!\n Попробуйте оформить заказ заново!")
 
 
 # Run after startup
