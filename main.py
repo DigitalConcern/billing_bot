@@ -1,7 +1,4 @@
-import telebot
-import asyncio
-import requests
-from aiogram import Bot, Dispatcher, types, executor
+from aiogram import *
 from telebot import types
 from config import *
 from forex_python.bitcoin import BtcConverter
