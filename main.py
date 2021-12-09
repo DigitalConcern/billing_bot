@@ -3,7 +3,7 @@ from config import *
 from forex_python.bitcoin import BtcConverter
 from coinbase.wallet.client import Client
 import os
-import time
+import asyncio
 import logging
 import requests
 import psycopg2 as pg
@@ -98,7 +98,8 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
         cur.execute(f'INSERT INTO users(id, trans) VALUES ({user_id}, false);')
         connection.commit()
 
-        # await accept(addr, value, user_id)
+        asyncio.create_task(accept(addr, value, user_id))
+        callback_query.data = ''
 
 
         # ioloop = asyncio.get_event_loop()
@@ -135,7 +136,7 @@ async def accept(address, sum, user):
     while ctr != 16 and float(ans['data']['confirmed_balance']) != sum:
         conf = requests.get(f"https://chain.so/api/v2/get_address_balance/BTC/{address}/500")
         ans = conf.json()
-        time.sleep(1)
+        await asyncio.sleep(1)
         ctr += 1
     if float(ans['data']['confirmed_balance']) == sum:
         cur.execute(f'INSERT INTO users(id, trans) VALUES ({user}, true);')
