@@ -29,10 +29,10 @@ user_id = 0
 
 # Команда start
 @dp.message_handler(commands=["start"])
-def start(m, res=False):
+async def start(m, res=False):
     # Добавляем две кнопки
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    await cur.execute('SELECT DISTINCT city FROM public.products;')
+    cur.execute('SELECT DISTINCT city FROM public.products;')
     rows = cur.fetchall()
     for row in rows:
         item = types.KeyboardButton(''.join(row[0]))
@@ -43,19 +43,19 @@ def start(m, res=False):
 
 
 @dp.message_handler(content_types=["text"])
-def handle_city(message: types.Message):
+async def handle_city(message: types.Message):
     markup_inline = types.InlineKeyboardMarkup()
     cur.execute(f"SELECT DISTINCT category FROM products WHERE city = '{message.text.strip()}';")
     rows = cur.fetchall()
     if not rows:
-        bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔 \n"
+        await bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔 \n"
                                           "Выбери из предложенных в меню!")
     else:
         for row in rows:
             item = types.InlineKeyboardButton(text=''.join(row[0]),
                                               callback_data=f'city_{"".join(row[0])}_{message.text.strip()}')
             markup_inline.add(item)
-        bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!", reply_markup=markup_inline)
+        await bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!", reply_markup=markup_inline)
 
 
 # Получение сообщений от юзера
@@ -65,7 +65,7 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
         city = callback_query.data.split('_')[2]
         category = callback_query.data.split('_')[1]
         markup_inline = types.InlineKeyboardMarkup()
-        await cur.execute(f"SELECT name, price, id FROM products WHERE category = '{category}' AND city = '{city}';")
+        cur.execute(f"SELECT name, price, id FROM products WHERE category = '{category}' AND city = '{city}';")
         rows = cur.fetchall()
         for row in rows:
             markup_inline.keyboard.clear()
@@ -128,15 +128,15 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
 #     return '!', 200
 
 
-async def accept(address, sum, user):
-    ctr = 0
-    conf = {}
-    while ctr != 900 or conf["data"]["confirmed_balance"] != sum:
-        conf = requests.get(f"https://chain.so/api/v2/get_address_balance/BTC/{address}/500")
-        await asyncio.sleep(0.1)
-    if conf["data"]["confirmed_balance"] == sum:
-        cur.execute(f'INSERT INTO users(id, trans) VALUES ({user}, true);')
-        connection.commit()
+# async def accept(address, sum, user):
+#     ctr = 0
+#     conf = {}
+#     while ctr != 900 or conf["data"]["confirmed_balance"] != sum:
+#         conf = requests.get(f"https://chain.so/api/v2/get_address_balance/BTC/{address}/500")
+#         await asyncio.sleep(0.1)
+#     if conf["data"]["confirmed_balance"] == sum:
+#         cur.execute(f'INSERT INTO users(id, trans) VALUES ({user}, true);')
+#         connection.commit()
 
 
 # Run after startup
@@ -160,8 +160,8 @@ if __name__ == '__main__':
         executor.start_webhook(
             dispatcher=dp,
             webhook_path=WEBHOOK_PATH,
-            on_startup=on_startup,
-            on_shutdown=on_shutdown,
+            on_startup=on_startup(dp),
+            on_shutdown=on_shutdown(dp),
             skip_updates=True,
             host=WEBAPP_HOST,
             port=int(os.environ.get("PORT", 5000)),
