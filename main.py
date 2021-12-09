@@ -1,9 +1,7 @@
 from aiogram import *
-from telebot import types
 from config import *
 from forex_python.bitcoin import BtcConverter
 from coinbase.wallet.client import Client
-from flask import Flask, request
 import os
 import logging
 import psycopg2 as pg
@@ -33,7 +31,7 @@ async def start(m, res=False):
     rows = cur.fetchall()
     for row in rows:
         item = types.KeyboardButton(''.join(row[0]))
-        markup.insert(item)
+        markup.add(item)
     # cur.execute(f'INSERT INTO users(id, last_trans) VALUES ({m.chat.id}, false);')
     # connection.commit()
     await bot.send_message(m.chat.id, "Выбери город, в котором планируешь сделать заказ!", reply_markup=markup)
