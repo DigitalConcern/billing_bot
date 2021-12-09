@@ -93,18 +93,18 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
         img.save('qr.png')
         await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
 
-        cur.execute(f'INSERT INTO users(id, trans) VALUES ({callback_query.from_user.id}, true);')
+        cur.execute(f'INSERT INTO users(id, trans) VALUES ({callback_query.from_user.id}, false);')
         connection.commit()
+        user_id = callback_query.from_user.id
+        callback_query.data = ''
 
-        await accept(addr, value, callback_query.from_user.id)
+        await accept(addr, value, user_id)
 
 
         # ioloop = asyncio.get_event_loop()
         # task = ioloop.create_task(accept(addr, value, callback_query.from_user.id))
         # ioloop.run_until_complete(asyncio.wait(task))
         # ioloop.close()
-
-        callback_query.data = ''
 
     #     markup_inline = types.InlineKeyboardMarkup()
     #     item_yes = types.InlineKeyboardButton(text='Да', callback_data='ans_yes')
