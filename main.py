@@ -53,7 +53,7 @@ async def handle_city(message: types.Message):
 
 
 # Получение сообщений от юзера
-@dp.callback_query_handler(lambda c: c.data is True)
+@dp.callback_query_handler(lambda c: c.data)
 async def callback_inline_category(callback_query: types.CallbackQuery):
     if callback_query.data.split('_')[0] == 'city':
         city = callback_query.data.split('_')[2]
@@ -142,7 +142,7 @@ if __name__ == '__main__':
         dispatcher=dp,
         webhook_path=WEBHOOK_PATH,
         on_startup=on_startup,
-        skip_updates=True,
+        skip_updates=False,
         host=WEBAPP_HOST,
         port=int(os.environ.get("PORT", 5000))
     )
