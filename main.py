@@ -53,7 +53,7 @@ async def handle_city(message: types.Message):
 
 
 # Получение сообщений от юзера
-@dp.callback_query_handler(lambda c: c.data)
+@dp.callback_query_handler(lambda c: c.data is True)
 async def callback_inline_category(callback_query: types.CallbackQuery):
     if callback_query.data.split('_')[0] == 'city':
         city = callback_query.data.split('_')[2]
@@ -73,7 +73,6 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
                                  f'{row[0]}\nЦена за одну штуку: {row[1]} RUB ≈ {round(b.convert_to_btc((row[1]), "RUB"), 7)} ₿\n'
                                  f'Выберите сколько товара Вы хотите купить',
                                  reply_markup=markup_inline)
-        callback_query.data = ''
 
     if callback_query.data.split('_')[0] == 'id':
         user_id = callback_query.from_user.id
@@ -99,7 +98,6 @@ async def callback_inline_category(callback_query: types.CallbackQuery):
         await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
         await bot.send_message(user_id, '<b>После успешной покупки в течение 15 минут вам придет'
                                         ' уведомление об успешной оплате</b>', parse_mode="HTML")
-        callback_query.data = ''
 
         asyncio.create_task(accept(addr, value, user_id))
 
@@ -146,7 +144,8 @@ if __name__ == '__main__':
         on_startup=on_startup,
         skip_updates=True,
         host=WEBAPP_HOST,
-        port=int(os.environ.get("PORT", 5000)))
+        port=int(os.environ.get("PORT", 5000))
+    )
 
     # bot.remove_webhook()
     # bot.set_webhook(url=APP_URL)
