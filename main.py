@@ -89,11 +89,11 @@ async def process_city(message: types.Message, state: FSMContext):
                                reply_markup=markup_inline)
 
 
-@dp.message_handler(lambda call: call.data, state=Form.category)
+@dp.callback_query_handler(lambda call: call.data, state=Form.category)
 async def process_category(callback_query: types.CallbackQuery, state: FSMContext):
     # Update state and data
-    await Form.next()
     await state.update_data(category=callback_query.data.strip())
+    await Form.next()
 
     async with state.proxy() as data:
         markup_inline = types.InlineKeyboardMarkup()
@@ -113,7 +113,7 @@ async def process_category(callback_query: types.CallbackQuery, state: FSMContex
                                  reply_markup=markup_inline)
 
 
-@dp.message_handler(lambda call: call.data, state=Form.amount)
+@dp.callback_query_handler(lambda call: call.data, state=Form.amount)
 async def process_amount(callback_query: types.CallbackQuery, state: FSMContext):
     amount = callback_query.data.split('_')[1]
     id = callback_query.data.split('_')[0]
