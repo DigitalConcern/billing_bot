@@ -77,9 +77,9 @@ async def process_city(message: types.Message, state: FSMContext):
     await Form.next()
 
     markup_inline = types.InlineKeyboardMarkup()
+    cur.execute(f"SELECT DISTINCT category FROM products WHERE city = '{message.text.strip()}';")
+    rows = cur.fetchall()
     if not 'отмена':
-        cur.execute(f"SELECT DISTINCT category FROM products WHERE city = '{message.text.strip()}';")
-        rows = cur.fetchall()
         if not rows:
             await bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔 \n"
                                                     "Выбери из предложенных в меню!")
