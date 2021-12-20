@@ -50,7 +50,7 @@ async def start(m, res=False):
 
 
 @dp.message_handler(state='*', commands='отмена')
-@dp.message_handler(Text(equals='cancel', ignore_case=True), state='*')
+@dp.message_handler(Text(equals='отмена', ignore_case=True), state='*')
 async def cancel_handler(message: types.Message, state: FSMContext):
     """
     Allow user to cancel any action
@@ -63,7 +63,7 @@ async def cancel_handler(message: types.Message, state: FSMContext):
     # Cancel state and inform user about it
     await state.finish()
     # And remove keyboard (just in case)
-    await message.reply('Cancelled.', reply_markup=types.ReplyKeyboardRemove())
+    await message.reply('Отменено.', reply_markup=types.ReplyKeyboardRemove())
 
 
 @dp.message_handler(state=Form.city)
@@ -77,18 +77,19 @@ async def process_city(message: types.Message, state: FSMContext):
     await Form.next()
 
     markup_inline = types.InlineKeyboardMarkup()
-    cur.execute(f"SELECT DISTINCT category FROM products WHERE city = '{message.text.strip()}';")
-    rows = cur.fetchall()
-    if not rows:
-        await bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔 \n"
-                                                "Выбери из предложенных в меню!")
-    else:
-        for row in rows:
-            item = types.InlineKeyboardButton(text=''.join(row[0]),
-                                              callback_data=''.join(row[0])) #city_{"".join(row[0])}_
-            markup_inline.add(item)
-        await bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!",
-                               reply_markup=markup_inline)
+    if not 'отмена':
+        cur.execute(f"SELECT DISTINCT category FROM products WHERE city = '{message.text.strip()}';")
+        rows = cur.fetchall()
+        if not rows:
+            await bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔 \n"
+                                                    "Выбери из предложенных в меню!")
+        else:
+            for row in rows:
+                item = types.InlineKeyboardButton(text=''.join(row[0]),
+                                                  callback_data=''.join(row[0])) #city_{"".join(row[0])}_
+                markup_inline.add(item)
+            await bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!",
+                                   reply_markup=markup_inline)
 
 
 @dp.callback_query_handler(lambda call: call.data, state=Form.category)
