@@ -142,7 +142,7 @@ async def process_amount(callback_query: types.CallbackQuery, state: FSMContext)
 
 @dp.callback_query_handler(lambda call: call.data, state=Form.acceptation)
 async def process_acceptation(callback_query: types.CallbackQuery, state: FSMContext):
-    if callback_query.data == 'Да':
+    if callback_query.data == 'yes':
         async with state.proxy() as data:
             user_id = callback_query.from_user.id
 
