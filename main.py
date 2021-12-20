@@ -38,32 +38,38 @@ class Form(StatesGroup):
 
 @dp.message_handler(commands=["start"])
 async def start(m, res=False):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    cur.execute('SELECT DISTINCT city FROM products;')
-    rows = cur.fetchall()
-    for row in rows:
-        item = types.KeyboardButton(''.join(row[0]))
-        markup.add(item)
-    markup.add('отмена')
-    await bot.send_message(m.chat.id, "Выбери город, в котором планируешь сделать заказ!", reply_markup=markup)
-    await Form.city.set()
+    try:
+        # Execute throttling manager with rate-limit equal to 2 seconds for key "start"
+        await dp.throttle('start', rate=4)
+    except Throttled:
+        # If request is throttled, the `Throttled` exception will be raised
+        await m.reply('От вас слишком много запросов!\nПодозрительно...')
+    else:
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        cur.execute('SELECT DISTINCT city FROM products;')
+        rows = cur.fetchall()
+        for row in rows:
+            item = types.KeyboardButton(''.join(row[0]))
+            markup.add(item)
+        await bot.send_message(m.chat.id, "Выбери город, в котором планируешь сделать заказ!", reply_markup=markup)
+        await Form.city.set()
 
 
-@dp.message_handler(state='*', commands='отмена')
-@dp.message_handler(Text(equals='отмена', ignore_case=True), state='*')
-async def cancel_handler(message: types.Message, state: FSMContext):
-    """
-    Allow user to cancel any action
-    """
-    current_state = await state.get_state()
-    if current_state is None:
-        return
-
-    logging.info('Cancelling state %r', current_state)
-    # Cancel state and inform user about it
-    await state.finish()
-    # And remove keyboard (just in case)
-    await message.reply('Отменено.', reply_markup=types.ReplyKeyboardRemove())
+# @dp.message_handler(state='*', commands='отмена')
+# @dp.message_handler(Text(equals='отмена', ignore_case=True), state='*')
+# async def cancel_handler(message: types.Message, state: FSMContext):
+#     """
+#     Allow user to cancel any action
+#     """
+#     current_state = await state.get_state()
+#     if current_state is None:
+#         return
+#
+#     logging.info('Cancelling state %r', current_state)
+#     # Cancel state and inform user about it
+#     await state.finish()
+#     # And remove keyboard (just in case)
+#     await message.reply('Отменено.', reply_markup=types.ReplyKeyboardRemove())
 
 
 @dp.message_handler(state=Form.city)
@@ -144,6 +150,8 @@ async def process_amount(callback_query: types.CallbackQuery, state: FSMContext)
         await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
         await bot.send_message(user_id, '<b>После успешной покупки в течение 15 минут вам придет'
                                         ' уведомление об успешной оплате</b>', parse_mode="HTML")
+        await bot.send_message(user_id, '<b>Если хотите оформить еще один заказ, введите</b>\n<code>/start</code>'
+                               , parse_mode="HTML")
 
         await state.finish()
         asyncio.create_task(accept(addr, value, user_id))
