@@ -2,6 +2,7 @@ from aiogram import *
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
+from aiogram.utils.exceptions import Throttled
 from aiogram.dispatcher.filters import Text
 from config import *
 from forex_python.bitcoin import BtcConverter
@@ -43,11 +44,12 @@ async def start(m, res=False):
     for row in rows:
         item = types.KeyboardButton(''.join(row[0]))
         markup.add(item)
+    markup.add('отмена')
     await bot.send_message(m.chat.id, "Выбери город, в котором планируешь сделать заказ!", reply_markup=markup)
     await Form.city.set()
 
 
-@dp.message_handler(state='*', commands='cancel')
+@dp.message_handler(state='*', commands='отмена')
 @dp.message_handler(Text(equals='cancel', ignore_case=True), state='*')
 async def cancel_handler(message: types.Message, state: FSMContext):
     """
