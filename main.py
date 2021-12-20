@@ -83,7 +83,7 @@ async def process_city(message: types.Message, state: FSMContext):
     else:
         for row in rows:
             item = types.InlineKeyboardButton(text=''.join(row[0]),
-                                              callback_data=f'{message.text.strip()}') #city_{"".join(row[0])}_
+                                              callback_data= ''.join(row[0])) #city_{"".join(row[0])}_
             markup_inline.add(item)
         await bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!",
                                reply_markup=markup_inline)
@@ -115,8 +115,8 @@ async def process_category(callback_query: types.CallbackQuery, state: FSMContex
 
 @dp.callback_query_handler(lambda call: call.data, state=Form.amount)
 async def process_amount(callback_query: types.CallbackQuery, state: FSMContext):
-    amount = callback_query.data.split('_')[1]
     id = callback_query.data.split('_')[0]
+    amount = callback_query.data.split('_')[1]
 
     async with state.proxy() as data:
 
