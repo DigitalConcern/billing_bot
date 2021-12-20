@@ -34,13 +34,15 @@ class Form(StatesGroup):
     city = State()
     category = State()
     amount = State()
+    id = State()
+    acceptation = State()
 
 
 @dp.message_handler(commands=["start"])
 async def start(m, res=False):
     try:
         # Execute throttling manager with rate-limit equal to 2 seconds for key "start"
-        await dp.throttle('start', rate=4)
+        await dp.throttle('start', rate=6)
     except Throttled:
         # If request is throttled, the `Throttled` exception will be raised
         await m.reply('От вас слишком много запросов!\nПодозрительно...')
@@ -123,39 +125,55 @@ async def process_category(callback_query: types.CallbackQuery, state: FSMContex
 
 @dp.callback_query_handler(lambda call: call.data, state=Form.amount)
 async def process_amount(callback_query: types.CallbackQuery, state: FSMContext):
-    id = callback_query.data.split('_')[0]
-    amount = callback_query.data.split('_')[1]
+    markup_inline = types.InlineKeyboardMarkup()
+    yes = 'Да'
+    no = 'Нет'
+    markup_inline.row(yes, no)
+
+    await Form.next()
 
     async with state.proxy() as data:
+        data['amount'] = int(callback_query.data.split('_')[1])
+        data['id'] = int(callback_query.data.split('_')[0])
 
-        data['amount'] = int(amount)
-        user_id = callback_query.from_user.id
+        await bot.send_message(callback_query.from_user.id, "Вы действительно хотите приобрести товар?",
+                               reply_markup=markup_inline)
 
-        cur.execute(f"INSERT INTO users(id, trans, date) VALUES ({user_id}, false,"
-                    f" '{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}');")
-        connection.commit()
 
-        addr = account.create_address()['address']
-        cur.execute(f"SELECT price, name, city FROM products WHERE id = {id};")
-        row = cur.fetchone()
-        value = round(b.convert_to_btc(row[0], "RUB"), 7) * int(amount)
-        msg = f"<b>Вы выбрали {row[1]} в количестве {amount} штук(а) для покупки в {row[2]}</b> \n\n" \
-              "Вам нужно в течение 15 минут перевести по адресу ниже необходимую" \
-              " сумму ≈" + f'<b>{value} ₿</b>' + \
-              " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n"
-        await bot.send_message(user_id, msg, parse_mode="HTML")
-        await bot.send_message(user_id, f'<code>{addr}</code>', parse_mode="HTML")
-        img = qrcode.make(addr)
-        img.save('qr.png')
-        await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
-        await bot.send_message(user_id, '<b>После успешной покупки в течение 15 минут вам придет'
-                                        ' уведомление об успешной оплате</b>', parse_mode="HTML")
-        await bot.send_message(user_id, '<b>Если хотите оформить еще один заказ, введите</b>\n<code>/start</code>'
-                               , parse_mode="HTML")
+@dp.callback_query_handler(lambda call: call.data, state=Form.acceptation)
+async def process_acceptation(callback_query: types.CallbackQuery, state: FSMContext):
+    if callback_query.data == 'yes':
+        async with state.proxy() as data:
+            user_id = callback_query.from_user.id
 
+            cur.execute(f"INSERT INTO users(id, trans, date) VALUES ({user_id}, false,"
+                        f" '{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}');")
+            connection.commit()
+
+            addr = account.create_address()['address']
+            cur.execute(f"SELECT price, name, city FROM products WHERE id = {id};")
+            row = cur.fetchone()
+            value = round(b.convert_to_btc(row[0], "RUB"), 7) * int(data['amount'])
+            msg = f"<b>Вы выбрали {row[1]} в количестве {data['amount']} штук(а) для покупки в {row[2]}</b> \n\n" \
+                  "Вам нужно в течение 15 минут перевести по адресу ниже необходимую" \
+                  " сумму ≈" + f'<b>{value} ₿</b>' + \
+                  " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n"
+            await bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
+            await bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML")
+            img = qrcode.make(addr)
+            img.save('qr.png')
+            await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+            await bot.send_message(callback_query.from_user.id, '<b>После успешной покупки в течение 15 минут вам придет'
+                                            ' уведомление об успешной оплате</b>', parse_mode="HTML")
+            await bot.send_message(callback_query.from_user.id, '<b>Если хотите оформить еще один заказ, введите</b>\n<code>/start</code>'
+                                   , parse_mode="HTML")
+
+            await state.finish()
+            asyncio.create_task(accept(addr, value, user_id))
+    else:
         await state.finish()
-        asyncio.create_task(accept(addr, value, user_id))
-
+        await bot.send_message(callback_query.from_user.id, '<b>Если хотите оформить еще один заказ или оформить заказ повторно,'
+                                                            ' введите</b>\n<code>/start</code>', parse_mode="HTML")
 
 # @dp.message_handler(commands=["start"])
 # async def start(m, res=False):
