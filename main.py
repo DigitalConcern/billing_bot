@@ -126,8 +126,8 @@ async def process_category(callback_query: types.CallbackQuery, state: FSMContex
 @dp.callback_query_handler(lambda call: call.data, state=Form.amount)
 async def process_amount(callback_query: types.CallbackQuery, state: FSMContext):
     markup_inline = types.InlineKeyboardMarkup()
-    yes = 'Да'
-    no = 'Нет'
+    yes = types.InlineKeyboardButton(text='Да', callback_data='yes')
+    no = types.InlineKeyboardButton(text='Нет', callback_data='no')
     markup_inline.row(yes, no)
 
     await Form.next()
@@ -142,7 +142,7 @@ async def process_amount(callback_query: types.CallbackQuery, state: FSMContext)
 
 @dp.callback_query_handler(lambda call: call.data, state=Form.acceptation)
 async def process_acceptation(callback_query: types.CallbackQuery, state: FSMContext):
-    if callback_query.data == 'yes':
+    if callback_query.data == 'Да':
         async with state.proxy() as data:
             user_id = callback_query.from_user.id
 
@@ -151,7 +151,7 @@ async def process_acceptation(callback_query: types.CallbackQuery, state: FSMCon
             connection.commit()
 
             addr = account.create_address()['address']
-            cur.execute(f"SELECT price, name, city FROM products WHERE id = {id};")
+            cur.execute(f"SELECT price, name, city FROM products WHERE id = {data['id']};")
             row = cur.fetchone()
             value = round(b.convert_to_btc(row[0], "RUB"), 7) * int(data['amount'])
             msg = f"<b>Вы выбрали {row[1]} в количестве {data['amount']} штук(а) для покупки в {row[2]}</b> \n\n" \
