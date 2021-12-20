@@ -83,7 +83,7 @@ async def process_city(message: types.Message, state: FSMContext):
     else:
         for row in rows:
             item = types.InlineKeyboardButton(text=''.join(row[0]),
-                                              callback_data= ''.join(row[0])) #city_{"".join(row[0])}_
+                                              callback_data=''.join(row[0])) #city_{"".join(row[0])}_
             markup_inline.add(item)
         await bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!",
                                reply_markup=markup_inline)
