@@ -30,10 +30,13 @@ b = BtcConverter()
 
 
 class Form(StatesGroup):
+    user_id = ''
+    id = 0
+    product = ''
+
     city = State()
     category = State()
     amount = State()
-    id = 0
     acceptation = State()
 
 
@@ -88,11 +91,13 @@ async def process_category(callback_query: types.CallbackQuery, state: FSMContex
 
     async with state.proxy() as data:
         markup_inline = types.InlineKeyboardMarkup()
-        cur.execute(f"SELECT name, price, id FROM products WHERE category = '{data['category']}' AND city = '{data['city']}';")
+        cur.execute(
+            f"SELECT name, price, id FROM products WHERE category = '{data['category']}' AND city = '{data['city']}';")
         rows = cur.fetchall()
         for row in rows:
             markup_inline.inline_keyboard.clear()
             img = open('data/' + ''.join(row[0]) + '.png', 'rb')
+            Form.product = ''.join(row[0])
             item_buy1 = types.InlineKeyboardButton(text='1', callback_data=f'{row[2]}' + '_1')
             item_buy3 = types.InlineKeyboardButton(text='3', callback_data=f'{row[2]}' + '_3')
             item_buy5 = types.InlineKeyboardButton(text='5', callback_data=f'{row[2]}' + '_5')
@@ -126,10 +131,17 @@ async def process_amount(callback_query: types.CallbackQuery, state: FSMContext)
 async def process_acceptation(callback_query: types.CallbackQuery, state: FSMContext):
     if callback_query.data == 'yes':
         async with state.proxy() as data:
-            user_id = callback_query.from_user.id
+            Form.user_id = callback_query.from_user.id
+            time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-            cur.execute(f"INSERT INTO users(id, trans, date) VALUES ({user_id}, false,"
-                        f" '{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}');")
+            cur.execute(f"INSERT INTO orders(user_id, product, amount, date, accept)"
+                        f" VALUES ("
+                        f"{Form.user_id},"
+                        f" {Form.product},"
+                        f" {data['amount']},"
+                        f" {time},"
+                        f" false"
+                        f");")
             connection.commit()
 
             addr = account.create_address()['address']
@@ -145,23 +157,26 @@ async def process_acceptation(callback_query: types.CallbackQuery, state: FSMCon
             img = qrcode.make(addr)
             img.save('qr.png')
             await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
-            await bot.send_message(callback_query.from_user.id, '<b>После успешной покупки в течение 15 минут вам придет'
-                                                                ' уведомление об успешной оплате</b>', parse_mode="HTML")
+            await bot.send_message(callback_query.from_user.id,
+                                   '<b>После успешной покупки в течение 15 минут вам придет'
+                                   ' уведомление об успешной оплате</b>', parse_mode="HTML")
 
             markup = types.ReplyKeyboardRemove()
-            await bot.send_message(callback_query.from_user.id,'<b>Если хотите оформить еще один заказ или оформить заказ повторно,'
-                                                               ' введите</b> <a>/start</a>', parse_mode="HTML", reply_markup=markup)
+            await bot.send_message(callback_query.from_user.id,
+                                   '<b>Если хотите оформить еще один заказ или оформить заказ повторно,'
+                                   ' введите</b> <a>/start</a>', parse_mode="HTML", reply_markup=markup)
 
             await state.finish()
-            asyncio.create_task(accept(addr, value, user_id))
+            asyncio.create_task(accept(addr, value, Form.user_id, time))
     else:
         await state.finish()
         markup = types.ReplyKeyboardRemove()
-        await bot.send_message(callback_query.from_user.id, '<b>Если хотите оформить еще один заказ или оформить заказ повторно,'
-                                                            ' введите</b> <a>/start</a>', parse_mode="HTML", reply_markup=markup)
+        await bot.send_message(callback_query.from_user.id,
+                               '<b>Если хотите оформить еще один заказ или оформить заказ повторно,'
+                               ' введите</b> <a>/start</a>', parse_mode="HTML", reply_markup=markup)
 
 
-async def accept(address, sum, user):
+async def accept(address, sum, user, time):
     ctr = 0
     conf = requests.get(f"https://chain.so/api/v2/get_address_balance/BTC/{address}/500")
     ans = conf.json()
@@ -171,14 +186,20 @@ async def accept(address, sum, user):
         await asyncio.sleep(10)
         ctr += 10
     if float(ans['data']['confirmed_balance']) == sum:
-        cur.execute(f"INSERT INTO users(id, trans, date) VALUES ({user}, true,"
-                    f" '{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}');")
+        cur.execute(f"UPDATE orders"
+                    f" SET"
+                    f" date={datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')},"
+                    f" accept=true"
+                    f" WHERE user_id={user} AND date={time});")
         connection.commit()
         await bot.send_message(user, "Покупка подтверждена!")
         return
     else:
-        cur.execute(f"INSERT INTO users(id, trans, date) VALUES ({user}, false,"
-                    f" '{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}');")
+        cur.execute(f"UPDATE orders"
+                    f" SET"
+                    f" date={datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')},"
+                    f" accept=false"
+                    f" WHERE user_id={user} AND date={time});")
         connection.commit()
         await bot.send_message(user, "Покупка не подтверждена!\nПопробуйте оформить заказ заново!")
         return
