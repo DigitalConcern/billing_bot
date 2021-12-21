@@ -134,7 +134,12 @@ async def process_acceptation(callback_query: types.CallbackQuery, state: FSMCon
             Form.user_id = callback_query.from_user.id
             time = str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
-            cur.execute(f"INSERT INTO orders(id, user_id, product, amount, date, accept) VALUES ({int(Form.user_id)}, '{Form.product}', {int(data['amount'])}, '{time}', false);")
+            cur.execute("INSERT INTO orders(id, user_id, product, amount, date, accept) VALUES ("
+                        + Form.user_id
+                        + ", " + Form.product
+                        + ", " + data['amount']
+                        + ", '" + time + "'"
+                        + ", " + 'false' + ");")
             connection.commit()
 
             addr = account.create_address()['address']
