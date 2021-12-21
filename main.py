@@ -88,7 +88,7 @@ async def process_city(message: types.Message, state: FSMContext):
         if not rows:
             await bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔 \n"
                                                     "Выбери из предложенных в меню!")
-            await start()
+            await start(message)
         else:
             for row in rows:
                 item = types.InlineKeyboardButton(text=''.join(row[0]),
