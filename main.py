@@ -186,13 +186,13 @@ async def accept(address, sum, user, time):
         ctr += 10
     if float(ans['data']['confirmed_balance']) == sum:
         cur.execute(
-            f"UPDATE orders SET date='{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}', accept=true WHERE user_id={user} AND date={time});")
+            f"UPDATE orders SET date='{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}', accept=true WHERE user_id={user} AND date='{time}');")
         connection.commit()
         await bot.send_message(user, "Покупка подтверждена!")
         return
     else:
         cur.execute(
-            f"UPDATE orders SET date='{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}', accept=true WHERE user_id={user} AND date={time});")
+            f"UPDATE orders SET date='{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}', accept=true WHERE user_id={user} AND date='{time}');")
         connection.commit()
         await bot.send_message(user, "Покупка не подтверждена!\nПопробуйте оформить заказ заново!")
         return
