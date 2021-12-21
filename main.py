@@ -141,6 +141,7 @@ async def process_acceptation(callback_query: types.CallbackQuery, state: FSMCon
                   + ", '" + time + "'" \
                   + ", " + 'false' + ");"
             cur.execute(cmd)
+            connection.rollback()
             connection.commit()
 
             addr = account.create_address()['address']
