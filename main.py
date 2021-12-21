@@ -166,15 +166,18 @@ async def process_acceptation(callback_query: types.CallbackQuery, state: FSMCon
             await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
             await bot.send_message(callback_query.from_user.id, '<b>После успешной покупки в течение 15 минут вам придет'
                                             ' уведомление об успешной оплате</b>', parse_mode="HTML")
+
+            markup = types.ReplyKeyboardRemove()
             await bot.send_message(callback_query.from_user.id, '<b>Если хотите оформить еще один заказ, введите</b>\n<code>/start</code>'
-                                   , parse_mode="HTML")
+                                   , parse_mode="HTML", reply_markup=markup)
 
             await state.finish()
             asyncio.create_task(accept(addr, value, user_id))
     else:
         await state.finish()
+        markup = types.ReplyKeyboardRemove()
         await bot.send_message(callback_query.from_user.id, '<b>Если хотите оформить еще один заказ или оформить заказ повторно,'
-                                                            ' введите</b>\n<code>/start</code>', parse_mode="HTML")
+                                                            ' введите</b>\n<code>/start</code>', parse_mode="HTML", reply_markup=markup)
 
 # @dp.message_handler(commands=["start"])
 # async def start(m, res=False):
