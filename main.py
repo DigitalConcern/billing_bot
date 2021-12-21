@@ -131,6 +131,7 @@ async def process_amount(callback_query: types.CallbackQuery, state: FSMContext)
     markup_inline.row(yes, no)
 
     await Form.next()
+    await Form.next()
 
     async with state.proxy() as data:
         data['amount'] = int(callback_query.data.split('_')[1])
