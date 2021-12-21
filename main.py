@@ -76,27 +76,26 @@ async def start(m, res=False):
 
 @dp.message_handler(state=Form.city)
 async def process_city(message: types.Message, state: FSMContext):
-    """
-    Process user name
-    """
-    async with state.proxy() as data:
-        data['city'] = message.text
+    if not message.text.startswith('/'):
+        async with state.proxy() as data:
+            data['city'] = message.text
 
-    await Form.next()
+        await Form.next()
 
-    markup_inline = types.InlineKeyboardMarkup()
-    cur.execute(f"SELECT DISTINCT category FROM products WHERE city = '{message.text.strip()}';")
-    rows = cur.fetchall()
-    if not rows:
-        await bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔 \n"
-                                                "Выбери из предложенных в меню!")
-    else:
-        for row in rows:
-            item = types.InlineKeyboardButton(text=''.join(row[0]),
-                                              callback_data=''.join(row[0])) #city_{"".join(row[0])}_
-            markup_inline.add(item)
-        await bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!",
-                               reply_markup=markup_inline)
+        markup_inline = types.InlineKeyboardMarkup()
+        cur.execute(f"SELECT DISTINCT category FROM products WHERE city = '{message.text.strip()}';")
+        rows = cur.fetchall()
+        if not rows:
+            await bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔 \n"
+                                                    "Выбери из предложенных в меню!")
+            await start()
+        else:
+            for row in rows:
+                item = types.InlineKeyboardButton(text=''.join(row[0]),
+                                                  callback_data=''.join(row[0])) #city_{"".join(row[0])}_
+                markup_inline.add(item)
+            await bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!",
+                                   reply_markup=markup_inline)
 
 
 @dp.callback_query_handler(lambda call: call.data, state=Form.category)
