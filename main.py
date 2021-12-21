@@ -142,7 +142,9 @@ async def process_acceptation(callback_query: types.CallbackQuery, state: FSMCon
                         f" '{time}',"
                         f" false"
                         f");")
+            connection.rollback()
             connection.commit()
+
 
             addr = account.create_address()['address']
             cur.execute(f"SELECT price, name, city FROM products WHERE id = {Form.id};")
