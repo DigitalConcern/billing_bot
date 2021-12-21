@@ -34,7 +34,7 @@ class Form(StatesGroup):
     city = State()
     category = State()
     amount = State()
-    id = State()
+    id = 0
     acceptation = State()
 
 
@@ -130,11 +130,11 @@ async def process_amount(callback_query: types.CallbackQuery, state: FSMContext)
     markup_inline.row(yes, no)
 
     await Form.next()
-    await Form.next()
+    # await Form.next()
 
     async with state.proxy() as data:
         data['amount'] = int(callback_query.data.split('_')[1])
-        data['id'] = int(callback_query.data.split('_')[0])
+        Form.id = int(callback_query.data.split('_')[0])
 
         await bot.send_message(callback_query.from_user.id, "Вы действительно хотите приобрести товар?",
                                reply_markup=markup_inline)
@@ -151,7 +151,7 @@ async def process_acceptation(callback_query: types.CallbackQuery, state: FSMCon
             connection.commit()
 
             addr = account.create_address()['address']
-            cur.execute(f"SELECT price, name, city FROM products WHERE id = {data['id']};")
+            cur.execute(f"SELECT price, name, city FROM products WHERE id = {Form.id};")
             row = cur.fetchone()
             value = round(b.convert_to_btc(row[0], "RUB"), 7) * int(data['amount'])
             msg = f"<b>Вы выбрали {row[1]} в количестве {data['amount']} штук(а) для покупки в {row[2]}</b> \n\n" \
@@ -164,11 +164,11 @@ async def process_acceptation(callback_query: types.CallbackQuery, state: FSMCon
             img.save('qr.png')
             await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
             await bot.send_message(callback_query.from_user.id, '<b>После успешной покупки в течение 15 минут вам придет'
-                                            ' уведомление об успешной оплате</b>', parse_mode="HTML")
+                                                                ' уведомление об успешной оплате</b>', parse_mode="HTML")
 
             markup = types.ReplyKeyboardRemove()
-            await bot.send_message(callback_query.from_user.id, '<b>Если хотите оформить еще один заказ, введите</b>\n<code>/start</code>'
-                                   , parse_mode="HTML", reply_markup=markup)
+            await bot.send_message(callback_query.from_user.id,'<b>Если хотите оформить еще один заказ или оформить заказ повторно,'
+                                                               ' введите</b>\n<a>/start</a>', parse_mode="HTML", reply_markup=markup)
 
             await state.finish()
             asyncio.create_task(accept(addr, value, user_id))
@@ -176,7 +176,7 @@ async def process_acceptation(callback_query: types.CallbackQuery, state: FSMCon
         await state.finish()
         markup = types.ReplyKeyboardRemove()
         await bot.send_message(callback_query.from_user.id, '<b>Если хотите оформить еще один заказ или оформить заказ повторно,'
-                                                            ' введите</b>\n<code>/start</code>', parse_mode="HTML", reply_markup=markup)
+                                                            ' введите</b>\n<a>/start</a>', parse_mode="HTML", reply_markup=markup)
 
 # @dp.message_handler(commands=["start"])
 # async def start(m, res=False):
