@@ -3,7 +3,6 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.exceptions import Throttled
-from aiogram.dispatcher.filters import Text
 from config import *
 from forex_python.bitcoin import BtcConverter
 from coinbase.wallet.client import Client
@@ -57,23 +56,6 @@ async def start(m, res=False):
         await Form.city.set()
 
 
-# @dp.message_handler(state='*', commands='отмена')
-# @dp.message_handler(Text(equals='отмена', ignore_case=True), state='*')
-# async def cancel_handler(message: types.Message, state: FSMContext):
-#     """
-#     Allow user to cancel any action
-#     """
-#     current_state = await state.get_state()
-#     if current_state is None:
-#         return
-#
-#     logging.info('Cancelling state %r', current_state)
-#     # Cancel state and inform user about it
-#     await state.finish()
-#     # And remove keyboard (just in case)
-#     await message.reply('Отменено.', reply_markup=types.ReplyKeyboardRemove())
-
-
 @dp.message_handler(state=Form.city)
 async def process_city(message: types.Message, state: FSMContext):
     if not message.text.startswith('/'):
@@ -92,7 +74,7 @@ async def process_city(message: types.Message, state: FSMContext):
         else:
             for row in rows:
                 item = types.InlineKeyboardButton(text=''.join(row[0]),
-                                                  callback_data=''.join(row[0])) #city_{"".join(row[0])}_
+                                                  callback_data=''.join(row[0]))
                 markup_inline.add(item)
             await bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!",
                                    reply_markup=markup_inline)
@@ -168,7 +150,7 @@ async def process_acceptation(callback_query: types.CallbackQuery, state: FSMCon
 
             markup = types.ReplyKeyboardRemove()
             await bot.send_message(callback_query.from_user.id,'<b>Если хотите оформить еще один заказ или оформить заказ повторно,'
-                                                               ' введите</b>\n<a>/start</a>', parse_mode="HTML", reply_markup=markup)
+                                                               ' введите</b> <a>/start</a>', parse_mode="HTML", reply_markup=markup)
 
             await state.finish()
             asyncio.create_task(accept(addr, value, user_id))
@@ -176,86 +158,9 @@ async def process_acceptation(callback_query: types.CallbackQuery, state: FSMCon
         await state.finish()
         markup = types.ReplyKeyboardRemove()
         await bot.send_message(callback_query.from_user.id, '<b>Если хотите оформить еще один заказ или оформить заказ повторно,'
-                                                            ' введите</b>\n<a>/start</a>', parse_mode="HTML", reply_markup=markup)
+                                                            ' введите</b> <a>/start</a>', parse_mode="HTML", reply_markup=markup)
 
-# @dp.message_handler(commands=["start"])
-# async def start(m, res=False):
-#     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-#     cur.execute('SELECT DISTINCT city FROM products;')
-#     rows = cur.fetchall()
-#     for row in rows:
-#         item = types.KeyboardButton(''.join(row[0]))
-#         markup.add(item)
-#     await bot.send_message(m.chat.id, "Выбери город, в котором планируешь сделать заказ!", reply_markup=markup)
-#
-#
-# @dp.message_handler(content_types=["text"])
-# async def handle_city(message: types.Message):
-#     markup_inline = types.InlineKeyboardMarkup()
-#     cur.execute(f"SELECT DISTINCT category FROM products WHERE city = '{message.text.strip()}';")
-#     rows = cur.fetchall()
-#     if not rows:
-#         await bot.send_message(message.chat.id, "К сожалению, вашего города еще нет в нашем списке 😔 \n"
-#                                                 "Выбери из предложенных в меню!")
-#     else:
-#         for row in rows:
-#             item = types.InlineKeyboardButton(text=''.join(row[0]),
-#                                               callback_data=f'city_{"".join(row[0])}_{message.text.strip()}')
-#             markup_inline.add(item)
-#         await bot.send_message(message.chat.id, "Выбери категорию, которая тебя интересует!",
-#                                reply_markup=markup_inline)
-#
-#
-# # Получение сообщений от юзера
-# @dp.callback_query_handler(lambda c: c.data)
-# async def callback_inline_category(callback_query: types.CallbackQuery):
-#     if callback_query.data.split('_')[0] == 'city':
-#         city = callback_query.data.split('_')[2]
-#         category = callback_query.data.split('_')[1]
-#         markup_inline = types.InlineKeyboardMarkup()
-#         cur.execute(f"SELECT name, price, id FROM products WHERE category = '{category}' AND city = '{city}';")
-#         rows = cur.fetchall()
-#         for row in rows:
-#             markup_inline.inline_keyboard.clear()
-#             img = open('data/' + ''.join(row[0]) + '.png', 'rb')
-#             item_buy1 = types.InlineKeyboardButton(text='1', callback_data=f'id_{row[2]}' + '_1')
-#             item_buy3 = types.InlineKeyboardButton(text='3', callback_data=f'id_{row[2]}' + '_3')
-#             item_buy5 = types.InlineKeyboardButton(text='5', callback_data=f'id_{row[2]}' + '_5')
-#             item_buy10 = types.InlineKeyboardButton(text='10', callback_data=f'id_{row[2]}' + '_10')
-#             markup_inline.row(item_buy1, item_buy3, item_buy5, item_buy10)
-#             await bot.send_photo(callback_query.from_user.id, img,
-#                                  f'{row[0]}\nЦена за одну штуку: {row[1]} RUB ≈ {round(b.convert_to_btc((row[1]), "RUB"), 7)} ₿\n'
-#                                  f'Выберите сколько товара Вы хотите купить',
-#                                  reply_markup=markup_inline)
-#
-#     if callback_query.data.split('_')[0] == 'id':
-#         user_id = callback_query.from_user.id
-#
-#         cur.execute(f"INSERT INTO users(id, trans, date) VALUES ({user_id}, false,"
-#                     f" '{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}');")
-#         connection.commit()
-#
-#         amount = callback_query.data.split('_')[2]
-#         id = callback_query.data.split('_')[1]
-#         addr = account.create_address()['address']
-#         cur.execute(f"SELECT price, name, city FROM products WHERE id = {id};")
-#         row = cur.fetchone()
-#         value = round(b.convert_to_btc(row[0], "RUB"), 7) * int(amount)
-#         msg = f"<b>Вы выбрали {row[1]} в количестве {amount} штук(а) для покупки в {row[2]}</b> \n\n" \
-#               "Вам нужно в течение 15 минут перевести по адресу ниже необходимую" \
-#               " сумму ≈" + f'<b>{value} ₿</b>' + \
-#               " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n"
-#         await bot.send_message(user_id, msg, parse_mode="HTML")
-#         await bot.send_message(user_id, f'<code>{addr}</code>', parse_mode="HTML")
-#         img = qrcode.make(addr)
-#         img.save('qr.png')
-#         await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
-#         await bot.send_message(user_id, '<b>После успешной покупки в течение 15 минут вам придет'
-#                                         ' уведомление об успешной оплате</b>', parse_mode="HTML")
-#
-#         asyncio.create_task(accept(addr, value, user_id))
-#
-#
+
 async def accept(address, sum, user):
     ctr = 0
     conf = requests.get(f"https://chain.so/api/v2/get_address_balance/BTC/{address}/500")
@@ -300,7 +205,3 @@ if __name__ == '__main__':
         host=WEBAPP_HOST,
         port=int(os.environ.get("PORT", 5000))
     )
-
-    # bot.remove_webhook()
-    # bot.set_webhook(url=APP_URL)
-    # server.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
