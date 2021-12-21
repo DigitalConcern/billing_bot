@@ -139,7 +139,7 @@ async def process_acceptation(callback_query: types.CallbackQuery, state: FSMCon
                         f"{Form.user_id},"
                         f" {Form.product},"
                         f" {data['amount']},"
-                        f" to_char({time}),"
+                        f" '{time}',"
                         f" false"
                         f");")
             connection.commit()
@@ -188,7 +188,7 @@ async def accept(address, sum, user, time):
     if float(ans['data']['confirmed_balance']) == sum:
         cur.execute(f"UPDATE orders"
                     f" SET"
-                    f" date=to_char({datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}),"
+                    f" date='{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}',"
                     f" accept=true"
                     f" WHERE user_id={user} AND date={time});")
         connection.commit()
@@ -197,9 +197,9 @@ async def accept(address, sum, user, time):
     else:
         cur.execute(f"UPDATE orders"
                     f" SET"
-                    f" date=to_char({datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}),"
+                    f" date='{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}',"
                     f" accept=false"
-                    f" WHERE user_id={user} AND date={time});")
+                    f" WHERE user_id={user} AND date='{time}');")
         connection.commit()
         await bot.send_message(user, "Покупка не подтверждена!\nПопробуйте оформить заказ заново!")
         return
