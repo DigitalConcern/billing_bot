@@ -132,7 +132,7 @@ async def process_acceptation(callback_query: types.CallbackQuery, state: FSMCon
     if callback_query.data == 'yes':
         async with state.proxy() as data:
             Form.user_id = callback_query.from_user.id
-            time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            time = str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
             cur.execute(f"INSERT INTO orders(user_id, product, amount, date, accept)"
                         f" VALUES ("
