@@ -142,7 +142,6 @@ async def process_acceptation(callback_query: types.CallbackQuery, state: FSMCon
                   + ", " + 'false' + ");"
             cur.execute(cmd)
             connection.commit()
-
             addr = account.create_address()['address']
             cur.execute(f"SELECT price, name, city FROM products WHERE id = {Form.id};")
             row = cur.fetchone()
@@ -151,15 +150,13 @@ async def process_acceptation(callback_query: types.CallbackQuery, state: FSMCon
                   "Вам нужно в течение 15 минут перевести по адресу ниже необходимую" \
                   " сумму ≈" + f'<b>{value} ₿</b>' + \
                   " \n\n <i>Адрес кошелька Bitcoin для перевода</i>: \n"
+
             await bot.send_message(callback_query.from_user.id, msg, parse_mode="HTML")
             await bot.send_message(callback_query.from_user.id, f'<code>{addr}</code>', parse_mode="HTML")
-            img = qrcode.make(addr)
-            img.save('qr.png')
-            await bot.send_photo(callback_query.from_user.id, open('qr.png', 'rb'))
+            await bot.send_photo(callback_query.from_user.id, await make_qr(addr))
             await bot.send_message(callback_query.from_user.id,
                                    '<b>После успешной покупки в течение 15 минут вам придет'
                                    ' уведомление об успешной оплате</b>', parse_mode="HTML")
-
             markup = types.ReplyKeyboardRemove()
             await bot.send_message(callback_query.from_user.id,
                                    '<b>Если хотите оформить еще один заказ или оформить заказ повторно,'
@@ -197,6 +194,12 @@ async def accept(address, sum, user, time):
         await bot.send_message(user, "Покупка не подтверждена!\nПопробуйте оформить заказ заново!")
         return
 
+
+async def make_qr(address):
+    img = qrcode.make(address)
+    img.save('qr.png')
+    ph = open('qr.png', 'rb')
+    return ph
 
 # Run after startup
 async def on_startup(dp):
