@@ -134,12 +134,13 @@ async def process_acceptation(callback_query: types.CallbackQuery, state: FSMCon
             Form.user_id = callback_query.from_user.id
             time = str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
-            cur.execute("INSERT INTO orders(user_id, product, amount, date, accept) VALUES ("
-                        + str(Form.user_id)
-                        + ", " + Form.product
-                        + ", " + str(data['amount'])
-                        + ", '" + time + "'"
-                        + ", " + 'false' + ");")
+            cmd = "INSERT INTO orders(user_id, product, amount, date, accept) VALUES (" \
+                  + str(Form.user_id) \
+                  + ", " + Form.product \
+                  + ", " + str(data['amount']) \
+                  + ", '" + time + "'" \
+                  + ", " + 'false' + ");"
+            cur.execute(cmd)
             connection.commit()
 
             addr = account.create_address()['address']
@@ -184,12 +185,14 @@ async def accept(address, sum, user, time):
         await asyncio.sleep(10)
         ctr += 10
     if float(ans['data']['confirmed_balance']) == sum:
-        cur.execute(f"UPDATE orders SET date='{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}', accept=true WHERE user_id={user} AND date={time});")
+        cur.execute(
+            f"UPDATE orders SET date='{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}', accept=true WHERE user_id={user} AND date={time});")
         connection.commit()
         await bot.send_message(user, "Покупка подтверждена!")
         return
     else:
-        cur.execute(f"UPDATE orders SET date='{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}', accept=true WHERE user_id={user} AND date={time});")
+        cur.execute(
+            f"UPDATE orders SET date='{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}', accept=true WHERE user_id={user} AND date={time});")
         connection.commit()
         await bot.send_message(user, "Покупка не подтверждена!\nПопробуйте оформить заказ заново!")
         return
